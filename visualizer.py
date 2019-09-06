@@ -25,9 +25,10 @@ class Visualizer:
             if i == 0:
                 continue
 
-            self.__layer[layer[0]] = layer[1]
+            layer_type = get_type(layer[1])
+            self.__layer[layer[0]] = {"type": layer_type, "detail": layer[1]}
 
-    def describe_layers(self, layer_name=None, row=1, column=1):
+    def describe_layers(self, layer_name=None):
         """ describe each layer's information
 
         Arguments:
@@ -37,11 +38,42 @@ class Visualizer:
             coulmn {int} -- the number of columns when you want to show kernel as images(default: 1)
         """
         if layer_name is None:
-            pprint(self.__layer)
+            print("All layer description:")
+            for k, v in self.__layer.items():
+                print(f"    Layer name: {k}")
+                print(f"        detail: {v['detail']}\n")
+
         else:
-            if get_type(self.__layer[layer_name]) == "conv":
-                kernel = self.__layer[layer_name].weight
-                self._generate_heatmap(kernel, row, column)
+            assert layer_name in self.__layer, f"layer name: {layer_name} doesn't exist"
+            print(f"Layer name: {layer_name}")
+            print(f"    detail: {self.__layer[layer_name]['detail']}")
+
+    def describe_kernel(self,
+                        layer_name=None,
+                        row=1,
+                        column=1,
+                        idx=[],
+                        is_all=False):
+        """ describe conv layer's kernel
+
+        Keyword Arguments:
+            layer_name {str} -- layer name (default: None)
+                                - if layer_name is None, you can show layer name and select
+            row {int} -- the number of rows you want to show at once (default: 1)
+            column {int} -- the number of columns you want to show at once (default: 1)
+            idx {list(int)} -- when you want to describe specified kernel, set this (default: None)
+            is_all {bool} -- if you want to describe all kernrel, set this as True
+        """
+        if layer_name == None:
+            pprint(self.__layer)        # TODO convだけ表示
+            layer_name = input("Layer name >>> ")
+
+        if not layer_name in self.__layer:
+            raise NotExistLayerNameError(f"layer name {layer_name} is not existed")
+
+        kernel = self.__layer[layer_name]["detail"].weight
+        self._generate_heatmap(kernel, row, column, idx, is_all)
+
 
     def generate_output(self, layer_name, inputs, is_show=False):
         """ generate outpu with specify layer
@@ -66,8 +98,8 @@ class Visualizer:
         if not is_tensor(inputs):
             raise NotTensorError("You specify not torch.tensor")
 
-        self._generate_output_image(inputs, self.__layer[layer_name].weight[0])
-        outputs_orig = self.__layer[layer_name](inputs)
+        self._generate_output_image(inputs, self.__layer[layer_name]["detail"].weight[0])
+        outputs_orig = self.__layer[layer_name]["detail"](inputs)
 
         if is_show:
             inputs = np.array(inputs).astype(np.uint8) * 255
@@ -76,16 +108,24 @@ class Visualizer:
 
         return outputs_orig
 
-    def _generate_heatmap(self, kernel, row, column, is_gray=True):
+    def _generate_heatmap(self,
+                          kernel,
+                          row,
+                          column,
+                          idx,
+                          is_all,
+                          is_gray=True):
         """ generate heatmap
 
         Arguments:
             kernel {torch.tensor} -- kernel of convolution layer
             row {int} -- the number of rows
             column {int} -- the number of columns
+            idx {list(int)} -- index of kernel for describe specified one
+            is_all {bool} -- whether generate heatmap of all kernels
 
         Keyword Arguments:
-            is_gray {bool} -- whether generate heatmap as gray scale(default: True)
+            is_gray {bool} -- whether generate heatmap as gray scale (default: True)
         """
         fix, ax = plt.subplots(nrows=row, ncols=column,
                                figsize=(kernel.shape[2], kernel.shape[3]))

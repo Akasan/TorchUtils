@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-TORCH_TENSOR_TYPE = type(torch.tensor([1]))
+__TORCH_TENSOR_TYPE = type(torch.tensor([1]))
 
 
 def is_tensor(x):
@@ -11,7 +11,7 @@ def is_tensor(x):
     Arguments:
         x {any} -- value you want to check the type
     """
-    return True if type(x) == TORCH_TENSOR_TYPE else False
+    return True if type(x) == __TORCH_TENSOR_TYPE else False
 
 
 def show_images(images, window_name, is_reguralized=True):
@@ -20,7 +20,15 @@ def show_images(images, window_name, is_reguralized=True):
 
 
 __TYPE = {
+    nn.Linear: "linear",
+
+    nn.Conv1d: "conv",
     nn.Conv2d: "conv",
+    nn.Conv3d: "conv",
+
+    nn.MaxPool1d: "mpool",
+    nn.MaxPool2d: "mpool",
+    nn.MaxPool3d: "mpool"
 }
 
 def get_type(layer):
