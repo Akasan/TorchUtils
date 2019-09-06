@@ -10,6 +10,10 @@ import seaborn as sns
 
 class Visualizer:
     def __init__(self, model):
+        """
+        Arguments:
+            model {torch.nn.module} -- Torch model
+        """
         self.__model = model
         self._separate_layers()
 
