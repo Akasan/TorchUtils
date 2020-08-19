@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import cv2
 
+
 # img_np = cv2.imread("pooh1.jpg")
 # img_np = img_np.reshape(1, img_np.shape[0], img_np.shape[1], img_np.shape[2]) / 255
 img_np = np.random.randint(0, 256, (1, 100, 100, 3)) / 255

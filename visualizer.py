@@ -18,7 +18,7 @@ class Visualizer:
         self._separate_layers()
 
     def _separate_layers(self):
-        """ separate model's layer"""
+        """ separate model's layer and keep as dictionary"""
         self.__layer = {}
 
         for i, layer in enumerate(self.__model.named_modules()):
@@ -34,8 +34,6 @@ class Visualizer:
         Arguments:
             layer_name {str} -- if you want to describe speficy layer, set this as the layer name
                                 (default: None)
-            row {int} -- the number of rows when you want to show kernel as images(default: 1)
-            coulmn {int} -- the number of columns when you want to show kernel as images(default: 1)
         """
         if layer_name is None:
             print("All layer description:")
