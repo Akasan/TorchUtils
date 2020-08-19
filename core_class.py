@@ -28,7 +28,10 @@ __TYPE = {
 
     nn.MaxPool1d: "mpool",
     nn.MaxPool2d: "mpool",
-    nn.MaxPool3d: "mpool"
+    nn.MaxPool3d: "mpool",
+
+    nn.ConvTranspose2d: "upsample",
+    nn.Upsample: "upsample",
 }
 
 def get_type(layer):
@@ -40,4 +43,8 @@ def get_type(layer):
     Returns:
         {str} -- layer type as character
     """
-    return __TYPE[type(layer)]
+    try:
+        _type = __TYPE[type(layer)]
+        return _type
+    except:
+        return type(layer)
