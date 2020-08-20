@@ -3,6 +3,8 @@ import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 
+from .LoaderGenerator import generate_dataloader
+
 
 __DATASET = {
     "MNIST": torchvision.datasets.MNIST,
@@ -28,15 +30,8 @@ def _load(datasets, root="./data", download=True, transform=None, batch_size=128
                             download=download,
                             transform=transform)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset,
-                                               batch_size=batch_size,
-                                               shuffle=shuffle,
-                                               num_workers=num_workers)
-
-    test_loader = torch.utils.data.DataLoader(test_dataset,
-                                              batch_size=batch_size,
-                                              shuffle=shuffle,
-                                              num_workers=num_workers)
+    train_loader = generate_dataloader(train_dataset, batch_size, shuffle, num_workers)
+    test_loader = generate_dataloader(test_dataset, batch_size, shuffle, num_workers)
 
     return train_loader, test_loader
 
