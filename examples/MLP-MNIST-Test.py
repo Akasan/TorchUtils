@@ -41,4 +41,4 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     trainer = MLPTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, 100, reshape_size=(-1, 28**2))
+    trainer.fit(train_loader, 1, reshape_size=(-1, 28**2))
