@@ -11,32 +11,22 @@ __DATASET = {
     "CocoCaptions": torchvision.datasets.CocoCaptions,
     "CocoDetection": torchvision.datasets.CocoDetection,
     "EMNIST": torchvision.datasets.EMNIST,
-    "FashinMNIST": torchvision.datasets.FashionMNIST
+    "FashionMNIST": torchvision.datasets.FashionMNIST
 }
 
 def _load(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
     train_dataset = None
     test_dataset = None
 
-    if transform is not None:
-        train_dataset = datasets(root=root,
-                                 train=True,
-                                 download=download,
-                                 transform=transform)
+    train_dataset = datasets(root=root,
+                             train=True,
+                             download=download,
+                             transform=transform)
 
-        test_dataset = datasets(root=root,
-                                train=False,
-                                download=download,
-                                transform=transform)
-
-    else:
-        train_dataset = datasets(root=root,
-                                 train=True,
-                                 download=download)
-
-        test_dataset = datasets(root=root,
-                                train=False,
-                                download=download)
+    test_dataset = datasets(root=root,
+                            train=False,
+                            download=download,
+                            transform=transform)
 
     train_loader = torch.utils.data.DataLoader(train_dataset,
                                                batch_size=batch_size,
@@ -52,6 +42,29 @@ def _load(datasets, root="./data", download=True, transform=None, batch_size=128
 
 
 def load_public_datasets(name="MNIST", root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
+    """ load_public_datasets
+
+    Keyword Arguments:
+    ------------------
+        name {str} -- public dataset's name (default: "MNIST")
+        root {str} -- root directory where dataset is (default: "./data")
+        download {bool} -- True when you want to download dataset (default: True)
+        transform {[type]} -- transform (default: None)
+        batch_size {int} -- batch size (default: 128)
+        shuffle {bool} -- True when you want to shuffle dataset (default: True)
+        num_workers {int} -- num workers (default: 2)
+
+    Returns:
+    --------
+        {torch.util.data.dataloader.DataLoader} -- train dataset's loader
+        {torch.util.data.dataloader.DataLoader} -- test dataset's loader
+
+    Examples:
+    ---------
+        >>> train_loader_mnist, test_loader_mnist = load_public_datasets()
+        >>> train_loader_mnist, test_loader_mnist = load_public_datasets("MNIST")
+        >>> train_loader_cifar10, test_loader_cifer10 = load_public_datasets("CIFAR10")
+    """
     datasets = __DATASET[name]
     return _load(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2)
 
