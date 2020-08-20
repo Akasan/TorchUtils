@@ -3,12 +3,10 @@ from pprint import pprint
 import torch
 import torch.nn as nn
 
-from core_class import get_type
+from .TypeChecker import get_type
+from .Errors import *
 
 
-class InvalidShapeError(Exception):
-    def __init__(self, mes=""):
-        super(InvalidShapeError, self).__init__(mes)
 
 
 def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
@@ -117,33 +115,13 @@ def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, d
     return (output_height, output_width, input_shape[-1])
 
 
-# TODO nn.Upsampleに変更する
-# def _calculate_upsample_shape(input_shape, channels, kernel_size, stride, padding, output_padding, dilation):
-#     if type(kernel_size) == int:
-#         kernel_size = [kernel_size, kernel_size]
-
-#     if type(padding) == int:
-#         padding = [padding, padding]
-
-#     if type(stride) == int:
-#         stride = [stride, stride]
-
-#     if type(dilation) == int:
-#         dilation = [dilation, dilation]
-
-#     if type(output_padding) == int:
-#         output_padding = [output_padding, output_padding]
-
-#     output_height = (input_shape[0] - 1) * stride[0] - 2 * padding[0] + dilation[0] * (kernel_size[0] - 1) + output_padding[0] + 1
-#     output_width = (input_shape[1] - 1) * stride[1] - 2 * padding[1] + dilation[1] * (kernel_size[1] - 1) + output_padding[1] + 1
-#     return (output_height, output_width, channels)
-
 def _calculate_upsample_shape(input_shape, scale_factor):
     return (input_shape[0]*scale_factor, input_shape[1]*scale_factor, input_shape[-1])
 
 
 def _is_exact_output_shape(exact_shape, model_shape):
     return True if exact_shape == model_shape["out"] else False
+
 
 
 if __name__ == "__main__":

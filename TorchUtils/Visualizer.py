@@ -1,7 +1,7 @@
 import numpy as np
 from pprint import pprint
-from core_class import is_tensor, get_type
-from error_class import *
+from .TypeChecker import is_tensor, get_type
+from .Errors import *
 import cv2
 from imglib.image_io import imshow_mul
 import matplotlib.pyplot as plt

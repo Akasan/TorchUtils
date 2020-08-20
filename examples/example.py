@@ -1,5 +1,7 @@
+import sys
+sys.path.append("../")
 from sample.model import MyModel
-from visualizer import Visualizer
+from Visualizer import Visualizer
 import pickle
 import numpy as np
 import torch

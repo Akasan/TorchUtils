@@ -14,11 +14,6 @@ def is_tensor(x):
     return True if type(x) == __TORCH_TENSOR_TYPE else False
 
 
-def show_images(images, window_name, is_reguralized=True):
-    """ show images"""
-    pass
-
-
 __TYPE = {
     nn.Linear: "linear",
 
@@ -34,7 +29,7 @@ __TYPE = {
     nn.Upsample: "upsample",
 }
 
-def get_type(layer):
+def get_type(layer, as_string=True):
     """ get type of layer
 
     Arguments:
@@ -44,7 +39,8 @@ def get_type(layer):
         {str} -- layer type as character
     """
     try:
-        _type = __TYPE[type(layer)]
-        return _type
+        _type = type(layer)
+        return __TYPE[_type] if as_string else _type
     except:
+        # __TYPEに登録されていないレイヤー
         return type(layer)
