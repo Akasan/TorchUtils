@@ -6,6 +6,9 @@ from ..Core.StrToClass import ACTIVATION
 from ..Core.ShapeChecker import check_shape
 
 
+# TODO 直接レイヤーオブジェクトを入れてもいいようにする
+
+
 class MLP(nn.Module):
     def __init__(self, neurons, activations):
         super(MLP, self).__init__()

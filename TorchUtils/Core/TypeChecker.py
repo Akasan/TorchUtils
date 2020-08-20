@@ -27,6 +27,11 @@ __TYPE = {
 
     nn.ConvTranspose2d: "upsample",
     nn.Upsample: "upsample",
+
+    nn.BatchNorm1d: "batchnorm",
+    nn.BatchNorm2d: "batchnorm",
+
+    nn.Dropout: "dropout",
 }
 
 def get_type(layer, as_string=True):

@@ -16,6 +16,7 @@ __DATASET = {
     "FashionMNIST": torchvision.datasets.FashionMNIST
 }
 
+
 def _load(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
     train_dataset = None
     test_dataset = None
@@ -36,7 +37,8 @@ def _load(datasets, root="./data", download=True, transform=None, batch_size=128
     return train_loader, test_loader
 
 
-def load_public_datasets(name="MNIST", root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
+def load_public_datasets(name="MNIST", root="./data", download=True,
+                         transform=None, batch_size=128, shuffle=True, num_workers=2):
     """ load_public_datasets
 
     Keyword Arguments:
@@ -61,11 +63,19 @@ def load_public_datasets(name="MNIST", root="./data", download=True, transform=N
         >>> train_loader_cifar10, test_loader_cifer10 = load_public_datasets("CIFAR10")
     """
     datasets = __DATASET[name]
-    return _load(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2)
+    return _load(datasets, root="./data", download=download, transform=transform,
+                 batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
 
 def get_public_datasets_list():
-    print(list(__DATASET.keys()))
+    """ get_public_datasets_list
+
+    Examples:
+    ---------
+        >>> get_public_datasets_list()
+        ... ['MNIST', 'CIFAR10', 'CIFAR100', 'CocoCaptions', 'CocoDetection', 'EMNIST', 'FashionMNIST']
+    """
+    return list(__DATASET.keys())
 
 
 if __name__ == "__main__":

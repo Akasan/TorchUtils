@@ -7,9 +7,27 @@ from .TypeChecker import get_type
 from .Errors import *
 
 
-
-
 def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
+    """ check_shape
+
+    Arguments:
+    ----------
+        model {} -- model you want to check shape
+        input_shape {tuple(int)} -- input shape
+
+    Keyword Arguments:
+    ------------------
+        output_shape {tuple(int)} -- output shape (default: None)
+        is_no_shape_check {bool} -- True when you don't want to check the in-out shape (default: False)
+
+    Raises:
+    -------
+        InvalidShapeError: this raises when the shape is invalid.
+
+    Examples:
+    ---------
+        >>>
+    """
     shape_history = {}
 
     for i, layer in enumerate(model.named_modules()):
@@ -50,21 +68,14 @@ def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
             shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "type": type(_layer), "shape": "2d"}
 
         elif layer_type == "upsample":
-            # if not _is_available_shape(shape_history[i-1]["out"], _layer.in_channels, shape_history[i-1]["shape"], "2d") and not is_no_shape_check:
-            #     raise InvalidShapeError(f"Specified model is invalid.")
-
-            # _output_shape = _calculate_upsample_shape(shape_history[i-1]["out"],
-            #                                           _layer.out_channels,
-            #                                           _layer.kernel_size,
-            #                                           _layer.stride,
-            #                                           _layer.padding,
-            #                                           _layer.output_padding,
-            #                                           _layer.dilation)
-
-            print(dir(_layer))
             _output_shape = _calculate_upsample_shape(shape_history[i-1]["out"], _layer.scale_factor)
-
             shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "type": type(_layer), "shape": "2d"}
+
+        elif layer_type == "batchnorm":
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": "2d"}
+
+        elif layer_type == "dropout":
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": "2d"}
 
         else:
             shape_history[i] = {"in": input_shape, "out": input_shape, "type": type(_layer), "shape": shape_history[i-1]["shape"]}
@@ -73,10 +84,22 @@ def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
 
     if not output_shape is None:
         is_exact_output_shape = _is_exact_output_shape(output_shape, shape_history[i])
-        print(is_exact_output_shape)
 
 
 def _is_available_shape(previous_output, current_input, previous_output_shape, current_input_shape):
+    """ _is_available_shape
+
+    Arguments:
+    ----------
+        previous_output {tuple(int)} -- previous layer's output shape
+        current_input {tuple(int)} -- current layer's input shape
+        previous_output_shape {str} -- dimension of precious layer
+        current_input_shape {str} -- dimension of current layer
+
+    Returns:
+    --------
+        {bool} -- True when specified layers' relationship acccording to the in-out shape is correct
+    """
     if previous_output_shape == "2d" and current_input_shape == "2d":
         return True if previous_output[-1] == current_input else False
 
@@ -91,13 +114,46 @@ def _is_available_shape(previous_output, current_input, previous_output_shape, c
     return False
 
 
-def _calculate_convolutional_output_shape(input_shape, chennels, kernel_size, padding=0, stride=1):
+def _calculate_convolutional_output_shape(input_shape, output_chennels, kernel_size, padding=(0, 0), stride=(1, 1)):
+    """ _calculate_convolutional_output_shape
+
+    Arguments:
+    ----------
+        input_shape {tuple(int)} -- input shape
+        chennels {int} -- output channels
+        kernel_size {int, tuple(int)} -- kernel size
+
+    Keyword Arguments:
+    ------------------
+        padding {int} -- padding (default: 0)
+        stride {int} -- stride (default: 1)
+
+    Returns:
+    --------
+        {tuple(int)} -- output shape
+    """
     output_height = ceil((input_shape[0] + 2*padding[0] - kernel_size[0]) / stride[0] + 1)
     output_width = ceil((input_shape[1] + 2*padding[1] - kernel_size[1]) / stride[1] + 1)
-    return (output_height, output_width, chennels)
+    return (output_height, output_width, output_chennels)
 
 
 def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, dilation):
+    """ _calculate_pooling_output_shape
+
+    Arguments:
+    ----------
+        input_shape {tuple(int)} -- input shape
+        kernel_size {int, tuple(int)} -- kernel size
+        padding {int} -- padiding
+        stride {int} -- stride
+        dilation {int} -- dilation
+
+    Returns:
+    --------
+        {tuple(int)} -- output shape
+    """
+    to_list = lambda x: [x, x]
+
     if type(kernel_size) == int:
         kernel_size = [kernel_size, kernel_size]
 
@@ -143,7 +199,7 @@ if __name__ == "__main__":
                 nn.MaxPool2d(kernel_size=2),
                 nn.Conv2d(412, 1024, kernel_size=3),
                 nn.Conv2d(1024, 1024, kernel_size=3),
-                nn.Upsample(scale_factor=2)
+                nn.Upsample(scale_factor=2),
             )
 
         def forward(self, x):

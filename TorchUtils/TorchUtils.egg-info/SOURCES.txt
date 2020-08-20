@@ -1,0 +1,8 @@
+setup.py
+TorchUtils/__init__.py
+TorchUtils/TorchUtils.egg-info/PKG-INFO
+TorchUtils/TorchUtils.egg-info/SOURCES.txt
+TorchUtils/TorchUtils.egg-info/dependency_links.txt
+TorchUtils/TorchUtils.egg-info/not-zip-safe
+TorchUtils/TorchUtils.egg-info/requires.txt
+TorchUtils/TorchUtils.egg-info/top_level.txt

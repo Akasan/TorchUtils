@@ -2,13 +2,14 @@ import sys
 sys.path.append("../")
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.DatasetGenerator import FromFolder
+from TorchUtils.Trainer.Trainer import MLPTrainer
 import torchvision.transforms as transforms
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
 EPOCH = 1
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 
 
 if __name__ == "__main__":
@@ -22,12 +23,5 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-5)
     criterion = nn.CrossEntropyLoss()
 
-    for epoch in range(EPOCH):
-        for i, (images, labels) in enumerate(train_loader):
-            images = images.view(-1, 640*480*3)
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            print(loss)
+    trainer = MLPTrainer(model, criterion, optimizer, "cpu")
+    trainer.fit(train_loader, EPOCH, BATCH_SIZE, (-1, 640*480*3))
