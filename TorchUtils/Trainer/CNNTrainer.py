@@ -31,8 +31,8 @@ class CNNClassificationTrainer(TrainerBase):
             self.model.train()
 
             for images, labels in train_loader:
-                # if type(reshape_size) == tuple:
-                #     images = images.view(*reshape_size)
+                if type(reshape_size) == tuple:
+                    images = images.view(*reshape_size)
 
                 images = images.to(self.device)
                 self.optimizer.zero_grad()

@@ -21,4 +21,3 @@ class TrainerBase(metaclass=ABCMeta):
     @abstractmethod
     def plot_result(self):
         pass
-
