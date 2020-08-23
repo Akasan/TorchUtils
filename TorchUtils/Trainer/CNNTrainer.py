@@ -1,35 +1,14 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from abc import abstractmedhot, ABCMeta
+from ._Base import TrainerBase
 
 
 def calculate_accuracy(outputs, labels):
     return (outputs.max(1)[1] == labels).sum().item()
 
 
-class TrainerBase(metaclass=ABCMeta):
-    @abstractmedhot
-    def fit(self):
-        pass
-
-    @abstractmedhot
-    def predict(self):
-        pass
-
-    @abstractmedhot
-    def save(self):
-        pass
-
-    @abstractmedhot
-    def read(self):
-        pass
-
-    @abstractmedhot
-    def plot_result(self):
-        pass
-
-class MLPTrainer(TrainerBase):
+class CNNClassificationTrainer(TrainerBase):
     def __init__(self, model, criterion, optimizer, device=None):
         self.model = model
         self.criterion = criterion
@@ -52,8 +31,8 @@ class MLPTrainer(TrainerBase):
             self.model.train()
 
             for images, labels in train_loader:
-                if type(reshape_size) == tuple:
-                    images = images.view(*reshape_size)
+                # if type(reshape_size) == tuple:
+                #     images = images.view(*reshape_size)
 
                 images = images.to(self.device)
                 self.optimizer.zero_grad()

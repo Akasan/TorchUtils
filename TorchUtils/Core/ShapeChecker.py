@@ -78,7 +78,7 @@ def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
             shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": "2d"}
 
         else:
-            shape_history[i] = {"in": input_shape, "out": input_shape, "type": type(_layer), "shape": shape_history[i-1]["shape"]}
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": shape_history[i-1]["shape"]}
 
     pprint(shape_history)
 
