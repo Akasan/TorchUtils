@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from ._Base import TrainerBase
+from ..Core.EnvironmentChecker import get_device_type
 
 
 def calculate_accuracy(outputs, labels):
@@ -16,7 +17,7 @@ class MLPClassificationTrainer(TrainerBase):
         if not device is None:
             self.device = device
         else:
-            self.device = "cude" if torch.cuda.is_available() else "cpu"
+            self.device = get_device_type()
 
         self.train_loss_history = []
         self.train_acc_history = []
@@ -113,7 +114,7 @@ class MLPAutoEncoderTrainer(TrainerBase):
         if not device is None:
             self.device = device
         else:
-            self.device = "cude" if torch.cuda.is_available() else "cpu"
+            self.device = get_device_type()
 
         self.train_loss_history = []
         self.train_acc_history = []

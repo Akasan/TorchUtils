@@ -3,17 +3,29 @@ import numpy as np
 import os
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
-from .LoaderGenerator import generate_dataloader
+from ._LoaderGenerator import generate_dataloader
+from ._SplitDataset import split_dataset
 
 
-def _generate_dataset(folder_path, transform):
+def generate_dataset(folder_path, transform):
     return ImageFolder(folder_path, transform)
 
 
-def generate_dataset_loader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2):
-    dataset = _generate_dataset(folder_path, transform)
+def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2):
+    dataset = generate_dataset(folder_path, transform)
     loader = generate_dataloader(dataset, batch_size, shuffle, num_workers)
     return loader
+
+
+def generate_dataloader_with_val(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
+    dataset = generate_dataset(folder_path, transform)
+    n_samples = len(dataset)
+    val_size = int(n_samples * validation_rate)
+    train_size = n_samples - val_size
+    train_dataset, val_dataset = split_dataset(dataset, validation_rate)
+    train_loader = generate_dataloader(train_dataset, batch_size, shuffle, number)
+    val_loader = generate_dataloader(val_dataset, batch_size, shuffle, number)
+    return train_loader, val_loader
 
 
 def to_cv2_format(img):

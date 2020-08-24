@@ -14,13 +14,10 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(28**2, 512),
-            # nn.BatchNorm1d(512),
+            nn.BatchNorm1d(512),
             nn.ReLU(True),
-            nn.Linear(512, 256),
-            # nn.BatchNorm1d(256),
-            nn.ReLU(True),
-            nn.Linear(256, 128),
-            # nn.BatchNorm1d(128),
+            nn.Linear(512, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(True),
             nn.Linear(128, 10),
             nn.Softmax()
@@ -37,5 +34,5 @@ if __name__ == "__main__":
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
     trainer = MLPClassificationTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, epochs=5, reshape_size=(-1, 28**2), validation_loader=test_loader)
+    trainer.fit(train_loader, epochs=30, reshape_size=(-1, 28**2), validation_loader=test_loader)
     trainer.plot_result()
