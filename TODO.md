@@ -31,3 +31,8 @@
         - input image
 	- kernel
 	- output image
+
+
+## Hyper Parameter Tuning
+- optuna
+- one cycle policy
