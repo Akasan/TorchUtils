@@ -106,17 +106,19 @@ def load_public_dataset_with_val(name="MNIST", root="./data", download=True,
         batch_size {int} -- batch size (default: 128)
         shuffle {bool} -- True when you want to shuffle dataset (default: True)
         num_workers {int} -- num workers (default: 2)
+        validation_rate {float} -- validation rate (default: 0.2)
 
     Returns:
     --------
         {torch.util.data.dataloader.DataLoader} -- train dataset's loader
+        {torch.util.data.dataloader.DataLoader} -- validation dataset's loader
         {torch.util.data.dataloader.DataLoader} -- test dataset's loader
 
     Examples:
     ---------
-        >>> train_loader_mnist, test_loader_mnist = load_public_datasets()
-        >>> train_loader_mnist, test_loader_mnist = load_public_datasets("MNIST")
-        >>> train_loader_cifar10, test_loader_cifer10 = load_public_datasets("CIFAR10")
+        >>> train_loader_mnist, val_loader, test_loader_mnist = load_public_datasets()
+        >>> train_loader_mnist, val_loader, test_loader_mnist = load_public_datasets("MNIST")
+        >>> train_loader_cifar10, val_loader_cifar10, test_loader_cifer10 = load_public_datasets("CIFAR10")
     """
     dataset = __DATASET[name]
     return _load_with_val(dataset, root="./data", download=download, transform=transform,
