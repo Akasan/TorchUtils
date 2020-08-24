@@ -3,6 +3,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from ._Base import TrainerBase
 from ..Core.EnvironmentChecker import get_device_type
+from ._Printer import get_result_text
 
 
 def calculate_accuracy(outputs, labels):
@@ -72,7 +73,7 @@ class MLPClassificationTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if epoch % verbose_rate == 0:
-                print(f"Epoch [{epoch+1} / {epochs}] accuracy: {train_acc} loss: {train_loss}")
+                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss))
 
     def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:
@@ -169,7 +170,7 @@ class MLPAutoEncoderTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if epoch % verbose_rate == 0:
-                print(f"Epoch [{epoch+1} / {epochs}] accuracy: {train_acc} loss: {train_loss}")
+                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss))
 
     def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:

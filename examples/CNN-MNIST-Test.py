@@ -1,6 +1,6 @@
 import sys
 sys.path.append("../")
-from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_datasets
+from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
 from TorchUtils.Trainer import CNNClassificationTrainer
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.Core.ShapeChecker import check_shape
@@ -33,7 +33,7 @@ class Model(nn.Module):
 
 if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    train_loader, test_loader = load_public_datasets("MNIST", transform=transform)
+    train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
     model = Model()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = nn.CrossEntropyLoss()

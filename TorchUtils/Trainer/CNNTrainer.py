@@ -5,6 +5,7 @@ from ._Base import TrainerBase
 import sys
 sys.path.append("../")
 from Core.EnvironmentChecker import get_device_type
+from ._Printer import get_result_text
 
 
 def calculate_accuracy(outputs, labels):
@@ -74,7 +75,7 @@ class CNNClassificationTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if epoch % verbose_rate == 0:
-                print(f"Epoch [{epoch+1} / {epochs}] accuracy: {train_acc} loss: {train_loss}")
+                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss))
 
     def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:
@@ -171,7 +172,7 @@ class CNNAutoEncoderTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if epoch % verbose_rate == 0:
-                print(f"Epoch [{epoch+1} / {epochs}] accuracy: {train_acc} loss: {train_loss}")
+                print(f"{get_epoch(epoch, epochs)} accuracy: {train_acc} loss: {train_loss}")
 
     def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:

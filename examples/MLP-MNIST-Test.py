@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
-from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_datasets
-from TorchUtils.Trainer import MLPClassificationTrainer
+from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
+from TorchUtils.Trainer.MLPTrainer import MLPClassificationTrainer
 from TorchUtils.ModelGenerator.MLP import MLP
 import torch
 import torch.nn as nn
@@ -29,7 +29,7 @@ class Model(nn.Module):
 
 if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    train_loader, test_loader = load_public_datasets("MNIST", transform=transform)
+    train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
     model = Model()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
