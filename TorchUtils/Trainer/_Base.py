@@ -21,3 +21,9 @@ class TrainerBase(metaclass=ABCMeta):
     @abstractmethod
     def plot_result(self):
         pass
+
+
+class OneCycleTrainerBase(metaclass=ABCMeta):
+    @abstractmethod
+    def fit_one_cycle(self):
+        pass
