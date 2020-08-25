@@ -2,9 +2,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from ._Base import TrainerBase
-import sys
-sys.path.append("../")
-from Core.EnvironmentChecker import get_device_type
+from ..Core.EnvironmentChecker import get_device_type
 from ._Printer import get_result_text
 
 
@@ -31,6 +29,8 @@ class CNNClassificationTrainer(TrainerBase):
         for epoch in range(epochs):
             train_loss = 0.0
             train_acc = 0.0
+            val_loss = 0.0
+            val_acc = 0.0
 
             self.model.train()
 
@@ -54,8 +54,6 @@ class CNNClassificationTrainer(TrainerBase):
             self.train_acc_history.append(train_acc)
 
             if not validation_loader is None:
-                val_loss = 0.0
-                val_acc = 0.0
 
                 self.model.eval()
                 with torch.no_grad():
@@ -84,7 +82,9 @@ class CNNClassificationTrainer(TrainerBase):
 
             images = images.to(self.device)
             outputs = self.model(images)
+            print(outputs)
             loss = self.criterion(outputs, labels)
+            print(calculate_accuracy(outputs, labels))
 
     def save(self, model_path="model.pth"):
         torch.save(self.model.state_dict(), model_path)

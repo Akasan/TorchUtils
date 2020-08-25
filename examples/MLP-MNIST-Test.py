@@ -3,6 +3,7 @@ sys.path.append("../")
 from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
 from TorchUtils.Trainer.MLPTrainer import MLPClassificationTrainer
 from TorchUtils.ModelGenerator.MLP import MLP
+from TorchUtils.Core.ShapeChecker import check_shape
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -31,10 +32,9 @@ if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
     model = Model()
+    check_shape(model, 28**2)
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
     trainer = MLPClassificationTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, epochs=1, reshape_size=(-1, 28**2), validation_loader=test_loader)
+    trainer.fit(train_loader, epochs=10, reshape_size=(-1, 28**2), validation_loader=test_loader)
     trainer.plot_result()
-    trainer.to_onnx(28*28, batch_size=8)
-    trainer.save()

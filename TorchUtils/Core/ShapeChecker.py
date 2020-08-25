@@ -7,7 +7,7 @@ from .TypeChecker import get_type
 from .Errors import *
 
 
-def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
+def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False, is_print=True):
     """ check_shape
 
     Arguments:
@@ -32,21 +32,27 @@ def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
 
     for i, layer in enumerate(model.named_modules()):
         if i == 0:
-            _shape = "1d" if len(input_shape)  == 1 else "2d"
-            shape_history[i] = {"in": input_shape, "out": input_shape, "type": "Dummy", "shape": _shape}
+            if type(input_shape) == int:
+                _shape = "1d"
+            else:
+                _shape = "2d"
+            shape_history[i] = {"in": input_shape, "out": input_shape, "layer": "Dummy", "shape": _shape}
             continue
 
         _layer = layer[1]
-        layer_type = get_type(_layer)
+        layer_type = get_type(_layer, as_string=False)
 
-        if layer_type == "linear":
+        if layer_type == nn.Linear:
             if not _is_available_shape(shape_history[i-1]["out"], _layer.in_features, shape_history[i-1]["shape"], "1d") and not is_no_shape_check:
                 raise InvalidShapeError(f"Specified model is invalid.")
 
-            shape_history[i] = {"in": _layer.in_features, "out": _layer.out_features, "type": type(_layer), "shape": "1d"}
-            pass
+            shape_history[i] = {"in": _layer.in_features, "out": _layer.out_features, "layer": "Linear", "shape": "1d"}
 
-        elif layer_type == "conv":
+        elif "activation" in str(layer_type):
+            activation_type = str(_layer).split(".")[-1].split("'")[0].split("(")[0]
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "shape": shape_history[i-1]["shape"], "layer": activation_type}
+
+        elif layer_type == nn.Conv2d:
             if not _is_available_shape(shape_history[i-1]["out"], _layer.in_channels, shape_history[i-1]["shape"], "2d") and not is_no_shape_check:
                 raise InvalidShapeError(f"Specified model is invalid.")
 
@@ -56,31 +62,35 @@ def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False):
                                                                   _layer.padding,
                                                                   _layer.stride)
 
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "type": type(_layer), "shape": "2d"}
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "layer": "Convolution 2d", "shape": "2d"}
 
-        elif layer_type == "mpool":
+        elif layer_type == nn.MaxPool2d:
             _output_shape = _calculate_pooling_output_shape(shape_history[i-1]["out"],
                                                             _layer.kernel_size,
                                                             _layer.padding,
                                                             _layer.stride,
                                                             _layer.dilation)
 
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "type": type(_layer), "shape": "2d"}
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "layer": "Max Pooling 2d", "shape": "2d"}
 
-        elif layer_type == "upsample":
+        elif layer_type == nn.Upsample:
             _output_shape = _calculate_upsample_shape(shape_history[i-1]["out"], _layer.scale_factor)
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "type": type(_layer), "shape": "2d"}
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": _output_shape, "layer": "Upsampling", "shape": "2d"}
 
-        elif layer_type == "batchnorm":
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": "2d"}
+        elif layer_type in (nn.BatchNorm1d, nn.BatchNorm2d):
+            _shape = "1d" if "1d" in str(layer_type) else "2d"
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "layer": f"Batch Normalization {_shape}", "shape": _shape}
 
-        elif layer_type == "dropout":
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": "2d"}
+        elif layer_type == nn.Dropout2d:
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "layer": "Dropout 2d", "shape": "2d"}
 
         else:
-            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "type": type(_layer), "shape": shape_history[i-1]["shape"]}
+            shape_history[i] = {"in": shape_history[i-1]["out"], "out": shape_history[i-1]["out"], "layer": layer_type, "shape": shape_history[i-1]["shape"]}
 
-    pprint(shape_history)
+    del shape_history[0]
+
+    if is_print:
+        pprint(shape_history)
 
     if not output_shape is None:
         is_exact_output_shape = _is_exact_output_shape(output_shape, shape_history[i])
@@ -104,7 +114,6 @@ def _is_available_shape(previous_output, current_input, previous_output_shape, c
         return True if previous_output[-1] == current_input else False
 
     elif previous_output_shape == "2d" and current_input_shape == "1d":
-        print(previous_output, current_input, previous_output[-1] == current_input)
         previous_all_cell = previous_output[0] * previous_output[1] * previous_output[2]
         return True if previous_all_cell == current_input else False
 

@@ -45,6 +45,9 @@ def get_type(layer, as_string=True):
     """
     try:
         _type = type(layer)
+        if "activation" in str(_type):
+            return "activation"
+
         return __TYPE[_type] if as_string else _type
     except:
         # __TYPEに登録されていないレイヤー

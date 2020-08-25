@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
 from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
-from TorchUtils.Trainer import CNNClassificationTrainer
+from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.Core.ShapeChecker import check_shape
 import torch
