@@ -34,5 +34,7 @@ if __name__ == "__main__":
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = nn.CrossEntropyLoss()
     trainer = MLPClassificationTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, epochs=30, reshape_size=(-1, 28**2), validation_loader=test_loader)
+    trainer.fit(train_loader, epochs=1, reshape_size=(-1, 28**2), validation_loader=test_loader)
     trainer.plot_result()
+    trainer.to_onnx(28*28, batch_size=8)
+    trainer.save()
