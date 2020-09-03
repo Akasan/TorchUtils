@@ -2,6 +2,7 @@ import sys
 sys.path.append("../")
 from TorchUtils.DatasetGenerator import FromPublicDatasets
 from TorchUtils.DatasetGenerator import FromFolder
+from TorchUtils.Visualizer.ImageFormatConverter import pil_to_opencv
 import cv2
 
 
@@ -11,8 +12,7 @@ loader = FromFolder.generate_dataloader(r"C:\Users\chino\OneDrive\Desktop\ikura-
 if __name__ == "__main__":
     for images, labels in loader:
         img = images.detach().numpy()[0]
-        img = img.transpose((1, 2, 0))
-        print(img.shape)
+        img = pil_to_opencv(img)
         cv2.imshow("hoge", img)
         while True:
             if cv2.waitKey(20) == ord("q"):
