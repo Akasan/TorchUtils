@@ -196,7 +196,7 @@ class MLPAutoEncoderTrainer(TrainerBase):
     def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
         for epoch in range(epochs):
             train_loss = 0.0
-            train_acc = 0.0
+            correct_num = 0.0
 
             self.model.train()
 
@@ -211,11 +211,11 @@ class MLPAutoEncoderTrainer(TrainerBase):
                 loss.backward()
                 self.optimizer.step()
 
-                train_acc += calculate_accuracy(outputs, labels)
+                correct_num += calculate_accuracy(outputs, labels)
                 train_loss += loss.item()
 
             train_loss /= len(train_loader.dataset)
-            train_acc /= len(train_loader.dataset)
+            train_acc = correct_num / len(train_loader.dataset)
             self.train_loss_history.append(train_loss)
             self.train_acc_history.append(train_acc)
 
