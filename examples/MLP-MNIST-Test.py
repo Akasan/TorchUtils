@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
 from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
-from TorchUtils.Trainer.MLPTrainer import MLPClassificationTrainer
+from TorchUtils.Trainer.MLPTrainer import MLPClassificationTrainer, MLPClassificationMPTrainer
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.Core.ShapeChecker import check_shape
 import torch
@@ -38,8 +38,8 @@ class Model(nn.Module):
 if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
-    model = Model().half()
-    optimizer = optim.Adam(model.parameters(), lr=1e-7, weight_decay=1e-2)
+    model = Model()
+    optimizer = optim.Adam(model.parameters(), lr=1e-2)
     criterion = nn.CrossEntropyLoss()
     # lr_finder = LRFinder(model, optimizer, criterion, device="cpu")
     # lr_finder.range_test(train_loader, end_lr=100, num_iter=100, accumulation_steps=1)
