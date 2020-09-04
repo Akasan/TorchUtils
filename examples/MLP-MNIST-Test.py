@@ -14,12 +14,8 @@ from torch_lr_finder import LRFinder
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(1, 1, kernel_size=3),
-            nn.ReLU(True)
-        )
-        self.classifier = nn.Sequential( 
-            nn.Linear(26*26, 512),
+        self.classifier = nn.Sequential(
+            nn.Linear(28*28, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(True),
             nn.Linear(512, 256),
@@ -35,7 +31,6 @@ class Model(nn.Module):
         )
 
     def forward(self, x):
-        x = self.features(x)
         x = x.view(x.size(0), -1)
         return self.classifier(x)
 
@@ -43,13 +38,13 @@ class Model(nn.Module):
 if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
-    model = Model()
+    model = Model().half()
     optimizer = optim.Adam(model.parameters(), lr=1e-7, weight_decay=1e-2)
     criterion = nn.CrossEntropyLoss()
-    lr_finder = LRFinder(model, optimizer, criterion, device="cpu")
-    lr_finder.range_test(train_loader, end_lr=100, num_iter=100, accumulation_steps=1)
-    lr_finder.plot()
-    lr_finder.reset()
-    # trainer = MLPClassificationTrainer(model, criterion, optimizer)
-    # trainer.fit(train_loader, epochs=10, reshape_size=(-1, 28**2), validation_loader=test_loader)
-    # trainer.plot_result()
+    # lr_finder = LRFinder(model, optimizer, criterion, device="cpu")
+    # lr_finder.range_test(train_loader, end_lr=100, num_iter=100, accumulation_steps=1)
+    # lr_finder.plot()
+    # lr_finder.reset()
+    trainer = MLPClassificationTrainer(model, criterion, optimizer)
+    trainer.fit(train_loader, epochs=10, reshape_size=(-1, 28**2), validation_loader=test_loader)
+    trainer.plot_result()

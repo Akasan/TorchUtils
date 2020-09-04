@@ -1,7 +1,7 @@
 from math import log10
 
 
-def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_acc=None, val_loss=None, integer_digit=3, float_digit=6):
+def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_acc=None, val_loss=None, integer_digit=3, float_digit=6, time=None):
     """ get_result_text
 
     Arguments:
@@ -17,6 +17,7 @@ def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_
         val_loss {float} -- validation loss (default: None)
         integer_digit {int} -- the number of integer digits (default: 3)
         float_digit {int} -- the number of float digits (default: 6)
+        time {float} -- process time (default: None)
 
     Returns:
     --------
@@ -38,6 +39,7 @@ def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_
     result = f"Epoch [ {' '*(order-current_order)}{current_epoch+1} / {epochs} ] => "
     result += f"<train> accuracy: {train_acc: {integer_digit}.{float_digit}f} " if not train_acc is None else ""
     result += f"loss: {train_loss: {integer_digit}.{float_digit}f} " if not train_loss is None else ""
+    result += f"training time: {time: {integer_digit}.{float_digit}f} " if not time is None else ""
     result += f"| <val> accuracy: {val_acc: {integer_digit}.{float_digit}f} " if not val_acc is None else ""
     result += f"loss: {val_loss: {integer_digit}.{float_digit}f} " if not val_loss is None else ""
     return result

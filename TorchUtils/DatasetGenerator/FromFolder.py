@@ -10,7 +10,7 @@ from ._LoaderGenerator import generate_dataloader as gd
 from ._SplitDataset import split_dataset
 
 
-
+# TODO 複数ラベルバージョン(CSVで管理)も作る
 class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
     def __init__(self, dir_name, transform=None, label=0, ext="jpg", shuffle=True):
         """

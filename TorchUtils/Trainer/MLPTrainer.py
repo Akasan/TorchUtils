@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from ._Base import TrainerBase
 from ..Core.EnvironmentChecker import get_device_type
 from ._Printer import get_result_text
+import time
 
 
 def calculate_accuracy(outputs, labels):
@@ -95,12 +96,15 @@ class MLPClassificationTrainer(TrainerBase):
 
             self.model.train()
 
+            st = time.time()
+
             for images, labels in train_loader:
                 if type(reshape_size) == tuple:
                     images = images.view(*reshape_size)
 
                 images = images.to(self.device)
                 self.optimizer.zero_grad()
+                images = images.half()
                 outputs = self.model(images)
                 loss = self.criterion(outputs, labels)
                 loss.backward()
@@ -113,6 +117,8 @@ class MLPClassificationTrainer(TrainerBase):
             train_acc /= len(train_loader.dataset)
             self.train_loss_history.append(train_loss)
             self.train_acc_history.append(train_acc)
+
+            time_diff = time.time() - st
 
             if not validation_loader is None:
                 val_loss = 0.0
@@ -136,9 +142,9 @@ class MLPClassificationTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if (epoch+1) % verbose_rate == 0:
-                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss))
+                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff))
 
-    def predict(self, test_loader, reshape_size=None):
+    def predict(self, test_loader, reshape_size=None, is_measure_time=True):
         for images, labels in test_loader:
             if type(reshape_size) == tuple:
                 images = images.view(*reshape_size)
