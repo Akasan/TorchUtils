@@ -193,14 +193,17 @@ class MLPClassificationTrainer(TrainerBase):
             outputs = self.model(images)
             loss = self.criterion(outputs, labels)
 
-    def save(self, model_path="model.pth"):
+    def save(self, model_path="model.pth", is_parameter_only=True):
         """ save
 
         Keyword Arguments:
         ------------------
             model_path {str} -- file name of model (default: "model.pth")
         """
-        torch.save(self.model.state_dict(), model_path)
+        if is_parameter_only:
+            torch.save(self.model.state_dict(), model_path)
+        else:
+            torch.save(self.model, model_path)
 
     def read(self, model_path="model.pth"):
         """ read
