@@ -1,11 +1,17 @@
+import sys
 import torch
 import torch.nn as nn
 import torch.multiprocessing as mp
 import matplotlib.pyplot as plt
 from ._Base import TrainerBase
 from ..Core.EnvironmentChecker import get_device_type
-from ._Printer import get_result_text
+from ._Printer import print_result
 import time
+import warnings
+warnings.simplefilter("ignore")
+import colorama
+colorama.init()
+from colorama import Fore
 
 
 def calculate_accuracy(outputs, labels):
@@ -62,12 +68,37 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
 
+        self.summarize()
+
+    def summarize(self):
+        print(Fore.RED + "\n<<< MODEL SUMMARY >>>")
+        print(Fore.GREEN + "    [ Model ]" + Fore.WHITE)
+        print("        " + str(self.model).replace("\n", "\n        "))
+        print(Fore.GREEN + "\n    [ Loss function ]" + Fore.WHITE)
+        print("        " + str(self.criterion)[:-2])
+        print(Fore.GREEN + "\n    [ Optimizer ]" + Fore.WHITE)
+        print("        " + str(self.optimizer).replace("\n", "\n        "))
+        print("\n\n")
+
     def reset_history(self):
         """ reset_history"""
         self.train_loss_history = []
         self.train_acc_history = []
         self.val_loss_history = []
         self.val_acc_history = []
+
+    def progressbar(self, dataset_length, cnt, num=50, is_training=True):
+        length = (cnt * num )// (dataset_length)
+        result = "#" * length + " " * (num - length)
+        percentage = int(cnt/dataset_length*100)
+        percentage = 100 if percentage > 100 else percentage
+        if is_training:
+            sys.stdout.write(f"\rTraining Progress [{result}] {percentage: 3d} % done")
+        else:
+            sys.stdout.write(f"\rValidation Progress [{result}] {percentage: 3d} % done")
+
+        sys.stdout.flush()
+
 
     def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
         """ train model
@@ -91,15 +122,21 @@ class MLPClassificationTrainer(TrainerBase):
             >>> mlp_trainer.fit(train_loader, epochs=10, verbose_rate=2)                                # train model for 10 epochs and print result every 2 epoch
             >>> mlp_trainer.fit(train_loader, epochs=10, validation_loader=validation_loader)           # train model for 10 epochs and use validation dataset
         """
+        print(Fore.RED + "<<< START TRAINING MODEL >>>" + Fore.WHITE)
+        self.reset_history()
+
         for epoch in range(epochs):
             train_loss = 0.0
             train_acc = 0.0
+            val_loss = None
+            val_acc = None
 
             self.model.train()
 
             st = time.time()
 
-            for images, labels in train_loader:
+            for i, (images, labels) in enumerate(train_loader, 1):
+                self.progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
                 if type(reshape_size) == tuple:
                     images = images.view(*reshape_size)
 
@@ -127,7 +164,9 @@ class MLPClassificationTrainer(TrainerBase):
 
                 self.model.eval()
                 with torch.no_grad():
-                    for images, labels in validation_loader:
+                    for i, (images, labels) in enumerate(validation_loader, 1):
+                        self.progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
+
                         if type(reshape_size) == tuple:
                             images = images.view(*reshape_size)
 
@@ -143,7 +182,7 @@ class MLPClassificationTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if (epoch+1) % verbose_rate == 0:
-                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff))
+                print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff)
 
     def predict(self, test_loader, reshape_size=None, is_measure_time=True):
         for images, labels in test_loader:
@@ -176,13 +215,16 @@ class MLPClassificationTrainer(TrainerBase):
         """ plot_result"""
         plt.subplot(1, 2, 1)
         plt.plot(self.train_acc_history, label="train", color="r")
-        plt.plot(self.val_acc_history, label="val", color="b")
+        if not self.val_acc_history == []:
+            plt.plot(self.val_acc_history, label="val", color="b")
         plt.xlabel("epoch")
         plt.ylabel("Accuracy")
         plt.legend()
+
         plt.subplot(1, 2, 2)
         plt.plot(self.train_loss_history, label="train", color="r")
-        plt.plot(self.val_loss_history, label="val", color="b")
+        if not self.val_loss_history == []:
+            plt.plot(self.val_loss_history, label="val", color="b")
         plt.xlabel("epoch")
         plt.ylabel("Loss")
         plt.legend()
@@ -248,7 +290,7 @@ class MLPAutoEncoderTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if epoch % verbose_rate == 0:
-                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss))
+                print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss)
 
     def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:
@@ -427,7 +469,7 @@ class MLPClassificationMPTrainer(TrainerBase):
                     self.val_acc_history.append(val_acc)
 
             if (epoch+1) % verbose_rate == 0:
-                print(get_result_text(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff))
+                print(print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff))
 
     def predict(self, test_loader, reshape_size=None, is_measure_time=True):
         for images, labels in test_loader:

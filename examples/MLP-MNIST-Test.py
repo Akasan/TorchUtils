@@ -37,7 +37,7 @@ class Model(nn.Module):
 
 if __name__ == "__main__":
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    train_loader, test_loader = load_public_dataset("MNIST", transform=transform)
+    train_loader, test_loader = load_public_dataset("MNIST", transform=transform, batch_size=256)
     model = Model()
     optimizer = optim.Adam(model.parameters(), lr=1e-2)
     criterion = nn.CrossEntropyLoss()
@@ -47,4 +47,6 @@ if __name__ == "__main__":
     # lr_finder.reset()
     trainer = MLPClassificationTrainer(model, criterion, optimizer)
     trainer.fit(train_loader, epochs=10, reshape_size=(-1, 28**2), validation_loader=test_loader)
+    # trainer.fit(train_loader, epochs=10, reshape_size=(-1, 28**2))
     trainer.plot_result()
+    trainer.save()

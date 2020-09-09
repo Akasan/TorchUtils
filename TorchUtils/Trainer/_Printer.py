@@ -1,7 +1,11 @@
+import sys
 from math import log10
+import colorama
+colorama.init()
+from colorama import Fore
 
 
-def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_acc=None, val_loss=None, integer_digit=3, float_digit=6, time=None):
+def print_result(current_epoch, epochs, train_acc=None, train_loss=None, val_acc=None, val_loss=None, integer_digit=3, float_digit=6, time=None):
     """ get_result_text
 
     Arguments:
@@ -36,10 +40,12 @@ def get_result_text(current_epoch, epochs, train_acc=None, train_loss=None, val_
     """
     current_order = int(log10(current_epoch+1))
     order = int(log10(epochs))
-    result = f"Epoch [ {' '*(order-current_order)}{current_epoch+1} / {epochs} ] => "
-    result += f"<train> accuracy: {train_acc: {integer_digit}.{float_digit}f} " if not train_acc is None else ""
-    result += f"loss: {train_loss: {integer_digit}.{float_digit}f} " if not train_loss is None else ""
-    result += f"training time: {time: {integer_digit}.{float_digit}f} " if not time is None else ""
-    result += f"| <val> accuracy: {val_acc: {integer_digit}.{float_digit}f} " if not val_acc is None else ""
-    result += f"loss: {val_loss: {integer_digit}.{float_digit}f} " if not val_loss is None else ""
-    return result
+    sys.stdout.write("\r")
+    result = f"Epoch [ {' '*(order-current_order)}{current_epoch+1} / {epochs} ] "
+    result += f"<train> accuracy: {Fore.RED}{train_acc: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not train_acc is None else ""
+    result += f"loss: {Fore.GREEN}{train_loss: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not train_loss is None else ""
+    result += f"training time: {Fore.BLUE}{time: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not time is None else ""
+    result += f"| <val> accuracy: {Fore.RED}{val_acc: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not val_acc is None else ""
+    result += f"loss: {Fore.GREEN}{val_loss: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not val_loss is None else ""
+    result += Fore.WHITE
+    print(result)
