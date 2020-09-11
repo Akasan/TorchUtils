@@ -1,8 +1,11 @@
+import sys
 import time
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from ._TrainerInterface import TrainerBase
+from ._ModelSaver import save_model
+from ._KeyboardInterruptHandler import save_model
 from ..Core.EnvironmentChecker import get_device_type
 from ._Printer import print_result, summarize_trainer, show_progressbar
 import warnings
@@ -36,78 +39,98 @@ class CNNClassificationTrainer(TrainerBase):
 
     def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
         print(Fore.RED + "<<< START TRAINING MODEL >>>" + Fore.WHITE)
+        self.reset_history()
 
-        for epoch in range(epochs):
-            train_loss = 0.0
-            train_acc = 0.0
-            val_loss = None
-            val_acc = None
+        try:
+            for epoch in range(epochs):
+                train_loss = 0.0
+                train_acc = 0.0
+                val_loss = None
+                val_acc = None
 
-            self.model.train()
-            st = time.time()
+                self.model.train()
+                st = time.time()
 
-            for i, (images, labels) in enumerate(train_loader, 1):
-                show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
+                for i, (images, labels) in enumerate(train_loader, 1):
+                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
 
-                if type(reshape_size) == tuple:
-                    images = images.view(*reshape_size)
+                    if type(reshape_size) == tuple:
+                        images = images.view(*reshape_size)
 
-                images = images.to(self.device)
-                self.optimizer.zero_grad()
-                outputs = self.model(images)
-                loss = self.criterion(outputs, labels)
-                loss.backward()
-                self.optimizer.step()
+                    images = images.to(self.device)
+                    self.optimizer.zero_grad()
+                    outputs = self.model(images)
+                    loss = self.criterion(outputs, labels)
+                    loss.backward()
+                    self.optimizer.step()
 
-                train_acc += calculate_accuracy(outputs, labels)
-                train_loss += loss.item()
+                    train_acc += calculate_accuracy(outputs, labels)
+                    train_loss += loss.item()
 
-            train_loss /= len(train_loader.dataset)
-            train_acc /= len(train_loader.dataset)
-            self.train_loss_history.append(train_loss)
-            self.train_acc_history.append(train_acc)
+                train_loss /= len(train_loader.dataset)
+                train_acc /= len(train_loader.dataset)
+                self.train_loss_history.append(train_loss)
+                self.train_acc_history.append(train_acc)
 
-            time_diff = time.time() - st
+                time_diff = time.time() - st
 
-            if not validation_loader is None:
-                val_loss = 0.0
-                val_acc = 0.0
+                if not validation_loader is None:
+                    val_loss = 0.0
+                    val_acc = 0.0
 
-                self.model.eval()
-                with torch.no_grad():
-                    for i, (images, labels) in enumerate(validation_loader, 1):
-                        show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
+                    self.model.eval()
+                    with torch.no_grad():
+                        for i, (images, labels) in enumerate(validation_loader, 1):
+                            show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
 
-                        if type(reshape_size) == tuple:
-                            images = images.view(*reshape_size)
+                            if type(reshape_size) == tuple:
+                                images = images.view(*reshape_size)
 
-                        images = images.to(self.device)
-                        outputs = self.model(images)
-                        loss = self.criterion(outputs, labels)
-                        val_acc += calculate_accuracy(outputs, labels)
-                        val_loss += loss.item()
+                            images = images.to(self.device)
+                            outputs = self.model(images)
+                            loss = self.criterion(outputs, labels)
+                            val_acc += calculate_accuracy(outputs, labels)
+                            val_loss += loss.item()
 
-                    val_loss /= len(validation_loader.dataset)
-                    val_acc /= len(validation_loader.dataset)
-                    self.val_loss_history.append(val_loss)
-                    self.val_acc_history.append(val_acc)
+                        val_loss /= len(validation_loader.dataset)
+                        val_acc /= len(validation_loader.dataset)
+                        self.val_loss_history.append(val_loss)
+                        self.val_acc_history.append(val_acc)
 
-            if (epoch+1) % verbose_rate == 0:
-                print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff)
+                if (epoch+1) % verbose_rate == 0:
+                    print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff)
+
+        except KeyboardInterrupt:
+            save_model()
+            # print(Fore.CYAN + "\n* Ctrl-Cによる終了コマンドが入力されました。")
+            # print(Fore.CYAN + "* 現時点で学習済みモデルを保存しますか？")
+            # print(Fore.CYAN + "* [ Yes: (Y/y), No: (N/n) ] >>> ", end="")
+            # result = input()
+
+            # if result in ("Y", "y"):
+            #     print(Fore.CYAN + "* ファイル名を入力してください。[デフォルト: model.pth] >>> ", end="")
+            #     filename = input()
+            #     filename = "model.pth" if filename == "" else filename
+            #     self.save(filename)
+
+            # print(Fore.CYAN + "* プログラムを終了します。")
+            # sys.exit()
 
     def predict(self, test_loader, reshape_size=None):
+        acc = 0.0
         for images, labels in test_loader:
             if type(reshape_size) == tuple:
                 images = images.view(*reshape_size)
 
             images = images.to(self.device)
             outputs = self.model(images)
-            print(outputs)
             loss = self.criterion(outputs, labels)
-            print(calculate_accuracy(outputs, labels))
+            acc += calculate_accuracy(outputs, labels)
 
-    def save(self, model_path="model.pth"):
-        torch.save(self.model.state_dict(), model_path)
+        print(f"Test accuracy: {acc / len(test_loader.dataset)}")
+
+    def save(self, model_path="model.pth", is_parameter_only=True):
+        save_model(self.model, model_path, is_parameter_only)
 
     def read(self, model_path="model.pth"):
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))

@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.multiprocessing as mp
 import matplotlib.pyplot as plt
 from ._TrainerInterface import TrainerBase
+from ._ModelSaver import save_model
 from ..Core.EnvironmentChecker import get_device_type
 from ._Printer import print_result, summarize_trainer, show_progressbar
 import time
@@ -192,10 +193,7 @@ class MLPClassificationTrainer(TrainerBase):
         ------------------
             model_path {str} -- file name of model (default: "model.pth")
         """
-        if is_parameter_only:
-            torch.save(self.model.state_dict(), model_path)
-        else:
-            torch.save(self.model, model_path)
+        save_model(self.model, model_path, is_parameter_only)
 
     def read(self, model_path="model.pth"):
         """ read

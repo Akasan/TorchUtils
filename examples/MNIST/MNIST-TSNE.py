@@ -23,16 +23,22 @@ class Model(nn.Module):
             nn.ReLU(True),
         )
 
-        self.classifier = nn.Sequential(
+        self.pre_classifier = nn.Sequential(
             nn.Linear(13*13*16, 512),
             nn.ReLU(True),
             nn.Linear(512, 128),
             nn.ReLU(True),
         )
 
+        self.classifier = nn.Sequential(
+            nn.Linear(128, 10),
+            nn.Softmax()
+        )
+
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
+        x = self.pre_classifier(x)
         return self.classifier(x)
 
 
@@ -46,6 +52,6 @@ if __name__ == "__main__":
     # lr_finder.range_test(train_loader, end_lr=100, num_iter=100, accumulation_steps=1)
     # lr_finder.plot()
     trainer = CNNClassificationTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, epochs=20, validation_loader=test_loader)
-    trainer.plot_result()
-    trainer.save(is_parameter_only=False)
+    trainer.fit(train_loader, epochs=2, validation_loader=test_loader)
+    # trainer.plot_result()
+    # trainer.save(is_parameter_only=False)
