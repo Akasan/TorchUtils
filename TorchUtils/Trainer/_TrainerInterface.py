@@ -1,7 +1,15 @@
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
 class TrainerBase(metaclass=ABCMeta):
+    @abstractmethod
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def reset_history(self):
+        pass
+
     @abstractmethod
     def fit(self):
         pass
@@ -20,10 +28,4 @@ class TrainerBase(metaclass=ABCMeta):
 
     @abstractmethod
     def plot_result(self):
-        pass
-
-
-class OneCycleTrainerBase(metaclass=ABCMeta):
-    @abstractmethod
-    def fit_one_cycle(self):
         pass

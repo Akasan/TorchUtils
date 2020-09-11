@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../")
+sys.path.append("../..")
 from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
 from TorchUtils.Trainer.MLPTrainer import MLPClassificationTrainer, MLPClassificationMPTrainer
 from TorchUtils.ModelGenerator.MLP import MLP

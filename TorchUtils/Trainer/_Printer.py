@@ -44,8 +44,41 @@ def print_result(current_epoch, epochs, train_acc=None, train_loss=None, val_acc
     result = f"Epoch [ {' '*(order-current_order)}{current_epoch+1} / {epochs} ] "
     result += f"<train> accuracy: {Fore.RED}{train_acc: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not train_acc is None else ""
     result += f"loss: {Fore.GREEN}{train_loss: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not train_loss is None else ""
-    result += f"training time: {Fore.BLUE}{time: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not time is None else ""
+    result += f"training time: {Fore.BLUE}{time: {integer_digit}.{float_digit}f}  {Fore.WHITE}" if not time is None else ""
     result += f"| <val> accuracy: {Fore.RED}{val_acc: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not val_acc is None else ""
     result += f"loss: {Fore.GREEN}{val_loss: {integer_digit}.{float_digit}f}    {Fore.WHITE}" if not val_loss is None else ""
     result += Fore.WHITE
     print(result)
+
+
+def summarize_trainer(model, criterion, optimizer):
+    """ summarize_trainer
+
+    Arguments:
+    ----------
+        model {nn.Module} -- model
+        criterion {any} -- criterion
+        optimizer {torch.optim} -- optimizer
+    """
+    print(Fore.RED + "\n<<< MODEL SUMMARY >>>")
+    print(Fore.GREEN + "    [ Model ]" + Fore.WHITE)
+    print("        " + str(model).replace("\n", "\n        "))
+    print(Fore.GREEN + "\n    [ Loss function ]" + Fore.WHITE)
+    print("        " + str(criterion)[:-2])
+    print(Fore.GREEN + "\n    [ Optimizer ]" + Fore.WHITE)
+    print("        " + str(optimizer).replace("\n", "\n        "))
+    print("\n\n")
+
+
+def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=True):
+    indicator = (current_cnt * indicator_num) // dataset_length
+    result = Fore.LIGHTBLUE_EX + "#" * indicator + Fore.WHITE + " " * (indicator_num - indicator)
+    percentage = int(current_cnt / dataset_length * 100)
+    percentage = 100 if percentage > 100 else percentage
+
+    if is_training:
+        sys.stdout.write(f"\rTraining Progress [{result}] {percentage: 3d} % done.")
+    else:
+        sys.stdout.write(f"\rValidation Progress [{result}] {percentage: 3d} % done.")
+
+    sys.stdout.flush()
