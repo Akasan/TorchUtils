@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.multiprocessing as mp
 import matplotlib.pyplot as plt
 from ._TrainerInterface import TrainerBase
+from ._KeyboardInterruptHandler import respond_exeption
 from ._ModelSaver import save_model
 from ..Core.EnvironmentChecker import get_device_type
 from ._Printer import print_result, summarize_trainer, show_progressbar
@@ -163,21 +164,13 @@ class MLPClassificationTrainer(TrainerBase):
                     print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff)
 
         except KeyboardInterrupt:
-            print(Fore.CYAN + "\n* Ctrl-Cによる終了コマンドが入力されました。")
-            print(Fore.CYAN + "* 現時点で学習済みモデルを保存しますか？")
-            print(Fore.CYAN + "* [ Yes: (Y/y), No: (N/n) ] >>> ", end="")
-            result = input()
+            respond_exeption(self.model)
 
-            if result in ("Y", "y"):
-                print(Fore.CYAN + "* ファイル名を入力してください。[デフォルト: model.pth] >>> ", end="")
-                filename = input()
-                filename = "model.pth" if filename == "" else filename
-                self.save(filename)
+    def predict(self, test_loader, reshape_size=None, to_numpy=False):
+        total_outputs = None
+        total_labels = None
 
-            print(Fore.CYAN + "* プログラムを終了します。")
-            sys.exit()
-
-    def predict(self, test_loader, reshape_size=None, is_measure_time=True):
+        self.model.eval()
         for images, labels in test_loader:
             if type(reshape_size) == tuple:
                 images = images.view(*reshape_size)
@@ -185,6 +178,36 @@ class MLPClassificationTrainer(TrainerBase):
             images = images.to(self.device)
             outputs = self.model(images)
             loss = self.criterion(outputs, labels)
+
+            if total_outputs is None:
+                total_outputs = outputs
+                total_labels = labels
+            else:
+                total_outputs = torch.cat((total_outputs, outputs), 0)
+                total_labels = torch.cat((total_labels, labels), 0)
+
+        if to_numpy:
+            return total_outputs.detach().numpy(), total_labels.detach().numpy()
+        else:
+            return total_outputs, total_labels
+
+    def evaluate(self, test_loader):
+        acc = 0.0
+        loss = 0.0
+
+        self.model.eval()
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images = images.to(self.device)
+                outputs = self.model(images)
+                acc += calculate_accuracy(outputs, labels)
+                loss += self.criterion(outputs, labels).item()
+
+            loss /= len(test_loader.dataset)
+            acc /= len(test_loader.dataset)
+
+            print(f"Evaluation Accuracy: {acc: .6f}")
+
 
     def save(self, model_path="model.pth", is_parameter_only=True):
         """ save
@@ -279,19 +302,14 @@ class MLPAutoEncoderTrainer(MLPClassificationTrainer):
                     print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss)
 
         except KeyboardInterrupt:
-            print(Fore.CYAN + "* Ctrl-Cによる終了コマンドが入力されました。")
-            print(Fore.CYAN + "* 現時点で学習済みモデルを保存しますか？")
-            result = input(Fore.CYAN + "* [ Yes: (Y/y), No: (N/n) ] >>> ")
+            respond_exeption(self.model)
 
-            if result in ("Y", "y"):
-                filename = input(Fore.CYAN + "* ファイル名を入力してください。[デフォルト: model.pth] >>> ")
-                filename = "model.pth" if filename == "" else filename
-                self.save(filename)
+    def predict(self, test_loader, reshape_size=None, to_numpy=False):
+        total_outputs = None
+        total_labels = None
 
-            print(Fore.CYAN + "* プログラムを終了します。")
-            sys.exit()
+        self.model.eval()
 
-    def predict(self, test_loader, reshape_size=None):
         for images, labels in test_loader:
             if type(reshape_size) == tuple:
                 images = images.view(*reshape_size)
@@ -299,3 +317,15 @@ class MLPAutoEncoderTrainer(MLPClassificationTrainer):
             images = images.to(self.device)
             outputs = self.model(images)
             loss = self.criterion(outputs, labels)
+
+            if total_outputs is None:
+                total_outputs = outputs
+                total_labels = labels
+            else:
+                total_outputs = torch.cat((total_outputs, outputs), 0)
+                total_labels = torch.cat((total_labels, labels), 0)
+
+        if to_numpy:
+            return total_outputs.detach().numpy(), total_labels.detach().numpy()
+        else:
+            return total_outputs, total_labels

@@ -6,3 +6,5 @@ opencv-python
 seaborn
 colorama
 torch-lr-finder
+scikit-learn
+mlxtend
