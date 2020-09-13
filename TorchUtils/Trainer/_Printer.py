@@ -71,6 +71,18 @@ def summarize_trainer(model, criterion, optimizer):
 
 
 def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=True):
+    """ show_progressbar
+
+    Arguments:
+    ----------
+        dataset_length {int} -- the number of data
+        current_cnt {int} -- current iteration number
+
+    Keyword Arguments:
+    ------------------
+        indicator_num {int} -- the length of progress bar (default: 50)
+        is_training {bool} -- True when you call this function in training loop (default: True)
+    """
     indicator = (current_cnt * indicator_num) // dataset_length
     result = Fore.LIGHTBLUE_EX + "#" * indicator + Fore.WHITE + " " * (indicator_num - indicator)
     percentage = int(current_cnt / dataset_length * 100)

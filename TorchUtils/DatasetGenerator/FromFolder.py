@@ -75,11 +75,7 @@ def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=Tru
 
     Returns:
     --------
-        {} -- [description]
-
-    Examples:
-    ---------
-        >>>
+        {torch.utils.data.DataLoader} -- dataloader
     """
     if is_single_labels:
         dataset = SingleFolderSingleLabelDataset(folder_path, transform, label, ext, shuffle)
@@ -91,6 +87,25 @@ def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=Tru
 
 
 def generate_dataloader_with_val(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
+    """ generate_dataloader_with_val
+
+    Arguments:
+    ----------
+        folder_path {str} -- folder path
+
+    Keyword Arguments:
+    ------------------
+        transform {torchvision.transforms} -- transform (default: None)
+        batch_size {int} -- batch size (default: 128)
+        shuffle {bool} -- whether data will be shuffled or not (default: True)
+        num_workers {int} -- the number of workers (default: 2)
+        validation_rate {float} -- the rate of validation (default: 0.2)
+
+    Returns:
+    --------
+        {torch.utils.data.DataLoader} -- dataloader for training
+        {torch.utils.data.DataLoader} -- dataloader for validation
+    """
     dataset = generate_dataset(folder_path, transform)
     n_samples = len(dataset)
     val_size = int(n_samples * validation_rate)
