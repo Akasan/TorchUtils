@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
-from torch_lr_finder import LRFinder
+# from torch_lr_finder import LRFinder
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
