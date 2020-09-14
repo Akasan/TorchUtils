@@ -22,6 +22,7 @@ class PipeLine:
 
         return x
 
+    # load, saveは動かない
     def load_pipeline(self, filename):
         self.pipeline = pickle.load(open(filename, "rb"))
 

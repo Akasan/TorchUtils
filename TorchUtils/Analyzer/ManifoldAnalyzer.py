@@ -8,6 +8,7 @@ from mlxtend.plotting import plot_decision_regions
 from pprint import pprint
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 
 def _get_standard_scaler(data):
@@ -80,6 +81,7 @@ class PCAAnalyzer:
         return self.pca.transform(inputs)
 
 
+# 次元削減
 class TruncatedSVDAnalyzer:
     def __init__(self, *args, **kwargs):
         self.svd = TruncatedSVD(n_components=2, n_iter=7, random_state=42)
@@ -118,6 +120,30 @@ class TruncatedSVDAnalyzer:
     def predict(self, inputs):
         inputs = inputs if self.scaler is None else self.scaler.transform(inputs)
         return self.svd.transform(inputs)
+
+
+class LDAAnalyzer:
+    def __init__(self, *args, **kwargs):
+        self.lda = LinearDiscriminantAnalysis()
+        self.stats = {}
+
+    def fit(self, inputs, labels):
+        self.scaler = _get_standard_scaler(inputs)
+        inputs = self.scaler.transform(inputs)
+        self.lda.fit(inputs, labels)
+
+    def plot(self, inputs, labels):
+        outputs = self.lda.transform(self.scaler.transform(inputs))
+        plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
+        for k in self.stats:
+            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
+
+        plt.colorbar()
+        plt.show()
+
+    def predict(self, inputs):
+        inputs = self.scaler.transform(inputs)
+        return self.lda.transform(inputs)
 
 
 class SVCAnalyzer:

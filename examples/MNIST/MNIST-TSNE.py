@@ -8,6 +8,7 @@ from TorchUtils.Core.ShapeChecker import check_shape
 from TorchUtils.Core.LayerCalculator import calculate_listed_layer
 from TorchUtils.PipeLine.PipeLine import PipeLine
 from TorchUtils.Analyzer.ManifoldAnalyzer import TSNEAnalyzer, SVCAnalyzer, PCAAnalyzer, TruncatedSVDAnalyzer
+from TorchUtils.Analyzer.ManifoldAnalyzer import LDAAnalyzer
 from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
 import numpy as np
 import torch
@@ -17,7 +18,6 @@ import torchvision.transforms as transforms
 # from torch_lr_finder import LRFinder
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-
 
 
 class Model(nn.Module):
@@ -67,12 +67,11 @@ def predict(model, test_loader, reshape_size=None):
     return total_outputs, total_labels
 
 
-
 def train_model(args):
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
-                                                             transform=transform,
-                                                             batch_size=args.batch_size)
+                                                                         transform=transform,
+                                                                         batch_size=args.batch_size)
     model = Model()
     optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
     criterion = nn.CrossEntropyLoss()
@@ -96,6 +95,12 @@ def train_svm(data):
     svc_visualizer.plot(data[0], data[1])
 
 
+def train_lda(data):
+    lda_visualizer = LDAAnalyzer()
+    lda_visualizer.fit(data[0], data[1])
+    lda_visualizer.plot(data[0], data[1])
+
+
 if __name__ == "__main__":
     args = parse_args()
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -117,9 +122,10 @@ if __name__ == "__main__":
     # svc_visualizer.evaluate(outputs, labels)
     # svc_visualizer.plot(outputs, labels)
 
-
     pipeline = PipeLine()
     pipeline.add_function(train_model, False, args)
     pipeline.add_function(train_svd)
-    pipeline.add_function(train_svm)
+    pipeline.add_function(train_lda)
+    # pipeline.add_function(train_svm)
     pipeline.execute()
+    pipeline.save_pipeline()
