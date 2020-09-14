@@ -111,7 +111,6 @@ class MLPClassificationTrainer(TrainerBase):
                 val_acc = None
 
                 self.model.train()
-
                 st = time.time()
 
                 for i, (images, labels) in enumerate(train_loader, 1):
