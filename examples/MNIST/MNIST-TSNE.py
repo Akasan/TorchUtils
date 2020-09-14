@@ -1,11 +1,14 @@
-# Sample of metric learning with CNN and TSNE
 import sys
 sys.path.append("../..")
-from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset
+from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset_with_val
 from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
+from TorchUtils.Core.Arguments import parse_args
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.Core.ShapeChecker import check_shape
-from TorchUtils.Visualizer.ManifoldVisualizer import TSNEVizualizer, SVCVisualizer, PCAVizualizer
+from TorchUtils.Core.LayerCalculator import calculate_listed_layer
+from TorchUtils.PipeLine.PipeLine import PipeLine
+from TorchUtils.Analyzer.ManifoldAnalyzer import TSNEAnalyzer, SVCAnalyzer, PCAAnalyzer, TruncatedSVDAnalyzer
+from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
 import numpy as np
 import torch
 import torch.nn as nn
@@ -20,29 +23,27 @@ import matplotlib.pyplot as plt
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3),
-            nn.MaxPool2d(kernel_size=2),
-            nn.ReLU(True),
-        )
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3)
+        self.pool1 = nn.MaxPool2d(kernel_size=2)
+        self.activation1 = nn.ReLU(True)
+        self.features = nn.ModuleList([self.conv1, self.pool1, self.activation1])
 
-        self.pre_classifier = nn.Sequential(
-            nn.Linear(13*13*16, 512),
-            nn.ReLU(True),
-            nn.Linear(512, 128),
-            nn.ReLU(True),
-        )
+        self.linear1 = nn.Linear(13*13*16, 512)
+        self.activation2 = nn.ReLU(True)
+        self.linear2 = nn.Linear(512, 128)
+        self.activation3 = nn.ReLU(True)
+        self.pre_classifier = nn.ModuleList([self.linear1, self.activation2, self.linear2, self.activation3])
 
-        self.classifier = nn.Sequential(
-            nn.Linear(128, 10),
-            nn.Softmax()
-        )
+        self.linear3 = AnalyzedLinear(128, 10)
+        self.activation4 = nn.Softmax()
+        self.classifier = nn.ModuleList([self.linear3, self.activation4])
+
 
     def forward(self, x):
-        x = self.features(x)
+        x = calculate_listed_layer(self.features, x)
         x = x.view(x.size(0), -1)
-        x =  self.pre_classifier(x)
-        return self.classifier(x)
+        x = calculate_listed_layer(self.pre_classifier, x)
+        return calculate_listed_layer(self.classifier, x)
 
 
 def predict(model, test_loader, reshape_size=None):
@@ -50,9 +51,10 @@ def predict(model, test_loader, reshape_size=None):
     total_labels = None
     for images, labels in test_loader:
         images = images.to("cpu")
-        outputs = model.features(images)
+        outputs = calculate_listed_layer(model.features, images)
         outputs = outputs.view(outputs.size(0), -1)
-        outputs = model.pre_classifier(outputs)
+        outputs = calculate_listed_layer(model.pre_classifier, outputs)
+
         if total_outputs is None:
             total_outputs = outputs.detach().numpy()
             total_labels = labels.detach().numpy()
@@ -65,20 +67,59 @@ def predict(model, test_loader, reshape_size=None):
     return total_outputs, total_labels
 
 
-if __name__ == "__main__":
+
+def train_model(args):
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    train_loader, test_loader = load_public_dataset("MNIST", transform=transform, batch_size=256)
+    train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
+                                                             transform=transform,
+                                                             batch_size=args.batch_size)
     model = Model()
     optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
     criterion = nn.CrossEntropyLoss()
     trainer = CNNClassificationTrainer(model, criterion, optimizer)
-    trainer.fit(train_loader, epochs=20, validation_loader=test_loader)
+    trainer.fit(train_loader, epochs=args.epochs, validation_loader=val_loader)
     outputs, labels = predict(model, test_loader)
-    tsne_visualizer = TSNEVizualizer(n_components=2)
-    tsne_visualizer.fit_transform(outputs, labels)
-    tsne_visualizer.plot()
+    return outputs, labels
 
-    # svc_visualizer = PCAVizualizer()
-    # svc_visualizer.fit(outputs)
-    # svc_visualizer.calculate_stats(outputs, labels)
+
+def train_svd(data):
+    svd = TruncatedSVDAnalyzer()
+    svd.fit(data[0])
+    outputs = svd.predict(data[0])
+    return (outputs, data[1])
+
+
+def train_svm(data):
+    svc_visualizer = SVCAnalyzer()
+    svc_visualizer.fit(data[0], data[1])
+    svc_visualizer.evaluate(data[0], data[1])
+    svc_visualizer.plot(data[0], data[1])
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+    # train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
+    #                                                          transform=transform,
+    #                                                          batch_size=args.batch_size)
+    # model = Model()
+    # optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
+    # criterion = nn.CrossEntropyLoss()
+    # trainer = CNNClassificationTrainer(model, criterion, optimizer)
+    # trainer.fit(train_loader, epochs=args.epochs, validation_loader=val_loader)
+    # outputs, labels = predict(model, test_loader)
+
+    # svd = TruncatedSVDAnalyzer()
+    # svd.fit(outputs)
+    # outputs = svd.predict(outputs)
+    # svc_visualizer = SVCAnalyzer()
+    # svc_visualizer.fit(outputs, labels)
+    # svc_visualizer.evaluate(outputs, labels)
     # svc_visualizer.plot(outputs, labels)
+
+
+    pipeline = PipeLine()
+    pipeline.add_function(train_model, False, args)
+    pipeline.add_function(train_svd)
+    pipeline.add_function(train_svm)
+    pipeline.execute()

@@ -43,6 +43,9 @@ class CNNClassificationTrainer(TrainerBase):
 
         try:
             for epoch in range(epochs):
+                # if epoch > 0:
+                #     self.model.linear3.plot()
+
                 train_loss = 0.0
                 train_acc = 0.0
                 val_loss = None
