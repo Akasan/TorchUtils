@@ -9,3 +9,4 @@ IkuraTest.py
 build
 dist
 *egg-info
+test
