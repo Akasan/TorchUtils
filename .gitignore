@@ -6,3 +6,6 @@ __pycache__
 .vscode
 IkuraTest.py
 *.pth
+build
+dist
+*egg-info

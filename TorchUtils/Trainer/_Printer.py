@@ -89,8 +89,8 @@ def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=
     percentage = 100 if percentage > 100 else percentage
 
     if is_training:
-        sys.stdout.write(f"\rTraining Progress [{result}] {percentage: 3d} % done.")
+        sys.stdout.write(f"\rTraining Progress [{result}] {percentage: 3d}% done.")
     else:
-        sys.stdout.write(f"\rValidation Progress [{result}] {percentage: 3d} % done.")
+        sys.stdout.write(f"\rValidation Progress [{result}] {percentage: 3d}% done.")
 
     sys.stdout.flush()

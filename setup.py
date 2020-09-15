@@ -17,10 +17,10 @@ setup(
     url="https://www.github.com/Akasan",
     packages=find_packages("TorchUtils"),
     package_dir={"": "TorchUtils"},
-    py_modules=[splitext(basename(path))[0] for path in glob("TorchUtils/*.py")],
+    # py_modules=[splitext(basename(path))[0] for path in glob("TorchUtils/*.py")],
     include_package_data=True,
     zip_safe=False,
     install_requires=_requires_from_file("requirements.txt"),
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest", "pytest-cov"]
+    # setup_requires=["pytest-runner"],
+    # tests_require=["pytest", "pytest-cov"]
 )
