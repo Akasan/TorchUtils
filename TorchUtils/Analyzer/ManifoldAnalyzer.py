@@ -196,8 +196,5 @@ class SVCAnalyzer:
         print(accuracy)
 
     def plot(self, data, labels):
-        # plt.scatter(data[:, 0], data[:, 1], c=labels)
-        # plt.colorbar()
-        # plt.show()
         plot_decision_regions(data, labels.reshape(-1), clf=self.svc, res=0.01, legend=2)
         plt.show()
