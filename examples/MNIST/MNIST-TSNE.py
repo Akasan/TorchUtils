@@ -5,6 +5,7 @@ from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
 from TorchUtils.Core.Arguments import parse_args
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.Core.ShapeChecker import check_shape
+from TorchUtils.Core.EnvironmentChecker import get_device_type
 from TorchUtils.Core.LayerCalculator import calculate_listed_layer
 from TorchUtils.PipeLine.PipeLine import PipeLine
 from TorchUtils.Analyzer.ManifoldAnalyzer import TSNEAnalyzer, SVCAnalyzer, PCAAnalyzer, TruncatedSVDAnalyzer
@@ -50,7 +51,8 @@ def predict(model, test_loader, reshape_size=None):
     total_outputs = None
     total_labels = None
     for images, labels in test_loader:
-        images = images.to("cpu")
+        images = images.to(get_device_type())
+        labels = labels.to(get_device_type())
         outputs = calculate_listed_layer(model.features, images)
         outputs = outputs.view(outputs.size(0), -1)
         outputs = calculate_listed_layer(model.pre_classifier, outputs)
@@ -72,7 +74,7 @@ def train_model(args):
     train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
                                                                          transform=transform,
                                                                          batch_size=args.batch_size)
-    model = Model()
+    model = Model().to(get_device_type())
     optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
     criterion = nn.CrossEntropyLoss()
     trainer = CNNClassificationTrainer(model, criterion, optimizer)
