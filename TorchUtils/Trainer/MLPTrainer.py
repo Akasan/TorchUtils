@@ -166,11 +166,28 @@ class MLPClassificationTrainer(TrainerBase):
             respond_exeption(self.model)
 
     def predict(self, test_loader, reshape_size=None, to_numpy=False):
+        """ predict
+
+        Arguments:
+        ----------
+            test_loader {torch.utils.data.DataLoader} -- test dataloader
+
+        Keyword Arguments:
+        ------------------
+            reshape_size {tuple} -- reshaped size (default: None)
+            to_numpy {bool} -- whether predicted result will be converted to numpy or not (default: False)
+
+        Returns:
+        --------
+            {torch.Tensor or np.ndarray} -- predicted result
+        """
         total_outputs = None
         total_labels = None
 
         self.model.eval()
-        for images, labels in test_loader:
+        for i, (images, labels) in enumerate(test_loader, 1):
+            show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
+
             if type(reshape_size) == tuple:
                 images = images.view(*reshape_size)
 
@@ -191,12 +208,19 @@ class MLPClassificationTrainer(TrainerBase):
             return total_outputs, total_labels
 
     def evaluate(self, test_loader):
+        """ evaluate
+
+        Arguments:
+        ----------
+            test_loader {torch.utils.data.DataLoader} -- test loader
+        """
         acc = 0.0
         loss = 0.0
 
         self.model.eval()
         with torch.no_grad():
-            for images, labels in test_loader:
+            for i, (images, labels) in enumerate(test_loader):
+                show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
                 images = images.to(self.device)
                 outputs = self.model(images)
                 acc += calculate_accuracy(outputs, labels)
