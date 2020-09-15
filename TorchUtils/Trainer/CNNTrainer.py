@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from ._TrainerInterface import TrainerBase
 from ._ModelSaver import save_model
 from ._KeyboardInterruptHandler import respond_exeption
-from ..Core.EnvironmentChecker import get_device_type
+from ..Core.EnvironmentChecker import get_device_type, convert_device
 from ._Printer import print_result, summarize_trainer, show_progressbar
 import warnings
 warnings.simplefilter("ignore")
@@ -55,7 +55,7 @@ class CNNClassificationTrainer(TrainerBase):
 
                 for i, (images, labels) in enumerate(train_loader, 1):
                     show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
-                    images = images.to(self.device)
+                    images, labels = convert_device(images, labels)
                     self.optimizer.zero_grad()
                     outputs = self.model(images)
                     loss = self.criterion(outputs, labels)
@@ -83,7 +83,7 @@ class CNNClassificationTrainer(TrainerBase):
                             if type(reshape_size) == tuple:
                                 images = images.view(*reshape_size)
 
-                            images = images.to(self.device)
+                            images, labels = convert_device(images, labels)
                             outputs = self.model(images)
                             loss = self.criterion(outputs, labels)
                             val_acc += calculate_accuracy(outputs, labels)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from ._TrainerInterface import TrainerBase
 from ._KeyboardInterruptHandler import respond_exeption
 from ._ModelSaver import save_model
-from ..Core.EnvironmentChecker import get_device_type
+from ..Core.EnvironmentChecker import get_device_type, convert_device
 from ._Printer import print_result, summarize_trainer, show_progressbar
 import time
 import warnings
@@ -119,7 +119,7 @@ class MLPClassificationTrainer(TrainerBase):
                     if type(reshape_size) == tuple:
                         images = images.view(*reshape_size)
 
-                    images = images.to(self.device)
+                    images, labels = convert_device(images, labels)
                     self.optimizer.zero_grad()
                     outputs = self.model(images)
                     loss = self.criterion(outputs, labels)
@@ -148,7 +148,7 @@ class MLPClassificationTrainer(TrainerBase):
                             if type(reshape_size) == tuple:
                                 images = images.view(*reshape_size)
 
-                            images = images.to(self.device)
+                            images, labels = convert_device(images, labels)
                             outputs = self.model(images)
                             loss = self.criterion(outputs, labels)
                             val_acc += calculate_accuracy(outputs, labels)
@@ -193,7 +193,6 @@ class MLPClassificationTrainer(TrainerBase):
 
             images = images.to(self.device)
             outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
 
             if total_outputs is None:
                 total_outputs = outputs
@@ -221,16 +220,14 @@ class MLPClassificationTrainer(TrainerBase):
         with torch.no_grad():
             for i, (images, labels) in enumerate(test_loader):
                 show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
-                images = images.to(self.device)
+                images, labels = convert_device(images, labels)
                 outputs = self.model(images)
                 acc += calculate_accuracy(outputs, labels)
                 loss += self.criterion(outputs, labels).item()
 
             loss /= len(test_loader.dataset)
             acc /= len(test_loader.dataset)
-
             print(f"Evaluation Accuracy: {acc: .6f}")
-
 
     def save(self, model_path="model.pth", is_parameter_only=True):
         """ save
@@ -307,9 +304,6 @@ class MLPAutoEncoderTrainer(MLPClassificationTrainer):
                     self.model.eval()
                     with torch.no_grad():
                         for images, labels in validation_loader:
-                            if type(reshape_size) == tuple:
-                                images = images.view(*reshape_size)
-
                             images = images.to(self.device)
                             outputs = self.model(images)
                             val_acc += calculate_accuracy(outputs, labels)
