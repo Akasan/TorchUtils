@@ -1,18 +1,21 @@
 import sys
 import time
+import warnings
+
+import colorama
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
-from ._TrainerInterface import TrainerBase
-from ._ModelSaver import save_model
-from ._KeyboardInterruptHandler import respond_exeption
-from ..Core.EnvironmentChecker import get_device_type, convert_device
-from ._Printer import print_result, summarize_trainer, show_progressbar
-import warnings
-warnings.simplefilter("ignore")
-import colorama
-colorama.init()
 from colorama import Fore
+
+from ..Core.EnvironmentChecker import convert_device, get_device_type
+from ._KeyboardInterruptHandler import respond_exeption
+from ._ModelSaver import save_model
+from ._Printer import print_result, show_progressbar, summarize_trainer
+from ._TrainerInterface import TrainerBase
+
+warnings.simplefilter("ignore")
+colorama.init()
 
 
 def calculate_accuracy(outputs, labels):

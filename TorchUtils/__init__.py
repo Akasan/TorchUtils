@@ -4,6 +4,7 @@ from .Trainer import *
 from .DatasetGenerator import *
 from .PipeLine import *
 from .Analyzer import *
+from .Layers import *
 
 
 __copyright__ = "Copyright (C) 2020 Akagawa Daisuke"

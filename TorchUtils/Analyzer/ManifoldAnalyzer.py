@@ -1,14 +1,15 @@
+from pprint import pprint
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from sklearn.manifold import TSNE
-from sklearn.svm import SVC
-from sklearn.decomposition import PCA, TruncatedSVD
-import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_decision_regions
-from pprint import pprint
+from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.svm import SVC
 
 
 def _get_standard_scaler(data):

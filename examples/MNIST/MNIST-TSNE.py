@@ -1,16 +1,6 @@
 import sys
-sys.path.append("../..")
-from TorchUtils.DatasetGenerator.FromPublicDatasets import load_public_dataset_with_val
-from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
-from TorchUtils.Core.Arguments import parse_args
-from TorchUtils.ModelGenerator.MLP import MLP
-from TorchUtils.Core.ShapeChecker import check_shape
-from TorchUtils.Core.EnvironmentChecker import get_device_type
-from TorchUtils.Core.LayerCalculator import calculate_listed_layer
-from TorchUtils.PipeLine.PipeLine import PipeLine
-from TorchUtils.Analyzer.ManifoldAnalyzer import TSNEAnalyzer, SVCAnalyzer, PCAAnalyzer, TruncatedSVDAnalyzer
-from TorchUtils.Analyzer.ManifoldAnalyzer import LDAAnalyzer
-from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,7 +8,23 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 # from torch_lr_finder import LRFinder
 from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
+
+from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
+from TorchUtils.Analyzer.ManifoldAnalyzer import (LDAAnalyzer, PCAAnalyzer,
+                                                  SVCAnalyzer,
+                                                  TruncatedSVDAnalyzer,
+                                                  TSNEAnalyzer)
+from TorchUtils.Core.Arguments import parse_args
+from TorchUtils.Core.EnvironmentChecker import get_device_type, convert_device
+from TorchUtils.Core.LayerCalculator import calculate_listed_layer
+from TorchUtils.Core.ShapeChecker import check_shape
+from TorchUtils.DatasetGenerator.FromPublicDatasets import \
+    load_public_dataset_with_val
+from TorchUtils.ModelGenerator.MLP import MLP
+from TorchUtils.PipeLine.PipeLine import PipeLine
+from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
+
+sys.path.append("../..")
 
 
 class Model(nn.Module):
@@ -51,8 +57,7 @@ def predict(model, test_loader, reshape_size=None):
     total_outputs = None
     total_labels = None
     for images, labels in test_loader:
-        images = images.to(get_device_type())
-        labels = labels.to(get_device_type())
+        images, labels = convert_device(images, labels)
         outputs = calculate_listed_layer(model.features, images)
         outputs = outputs.view(outputs.size(0), -1)
         outputs = calculate_listed_layer(model.pre_classifier, outputs)
