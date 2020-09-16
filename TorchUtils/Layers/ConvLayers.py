@@ -27,7 +27,7 @@ class FireModule(nn.Module):
 
         # 3X3 expand block
         self.expand3 = nn.Sequential(
-            nn.Conv2d(squeeze_channels, expand_channels, kernel_size=3, stride=1),
+            nn.Conv2d(squeeze_channels, expand_channels, kernel_size=3, stride=1, padding=1),
             nn.ReLU(True)
         )
 
@@ -35,4 +35,5 @@ class FireModule(nn.Module):
         squeeze_out = self.squeeze(x)
         expand1_out = self.expand1(squeeze_out)
         expand3_out = self.expand3(squeeze_out)
+        print(expand1_out.size(), expand3_out.size())
         return torch.cat([expand1_out, expand3_out], 1)

@@ -1,4 +1,5 @@
 import sys
+sys.path.append("../..")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,14 +24,15 @@ from TorchUtils.DatasetGenerator.FromPublicDatasets import \
 from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.PipeLine.PipeLine import PipeLine
 from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
+from TorchUtils.Layers.ConvLayers import FireModule
 
-sys.path.append("../..")
 
 
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3)
+        # self.conv1 = nn.Conv2d(1, 16, kernel_size=3)
+        self.conv1 = FireModule(1, 8, 16)
         self.pool1 = nn.MaxPool2d(kernel_size=2)
         self.activation1 = nn.ReLU(True)
         self.features = nn.ModuleList([self.conv1, self.pool1, self.activation1])
