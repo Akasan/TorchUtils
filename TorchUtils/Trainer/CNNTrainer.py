@@ -45,6 +45,7 @@ class CNNClassificationTrainer(TrainerBase):
         self.reset_history()
 
         try:
+            st = time.time()
             for epoch in range(epochs):
                 # if epoch > 0:
                 #     self.model.linear3.plot()
@@ -57,7 +58,7 @@ class CNNClassificationTrainer(TrainerBase):
                 st = time.time()
 
                 for i, (images, labels) in enumerate(train_loader, 1):
-                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
+                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i, whole_time=time.time()-st)
                     images, labels = convert_device(images, labels)
                     self.optimizer.zero_grad()
                     outputs = self.model(images)

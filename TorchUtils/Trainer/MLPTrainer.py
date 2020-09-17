@@ -107,6 +107,7 @@ class MLPClassificationTrainer(TrainerBase):
         self.reset_history()
 
         try:
+            st = time.time()
             for epoch in range(epochs):
                 train_loss = 0.0
                 train_acc = 0.0
@@ -117,7 +118,7 @@ class MLPClassificationTrainer(TrainerBase):
                 st = time.time()
 
                 for i, (images, labels) in enumerate(train_loader, 1):
-                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i)
+                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i, whole_time=time.time()-st)
 
                     if type(reshape_size) == tuple:
                         images = images.view(*reshape_size)
