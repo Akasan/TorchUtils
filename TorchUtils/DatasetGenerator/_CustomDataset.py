@@ -6,11 +6,11 @@ warnings.simplefilter("ignore")
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, data, labels, transform=None):
         self.transform = transform
-        self.data = data
-        self.labels = labels
+        self.data = data.detach().numpy()
+        self.labels = labels.detach().numpy()
 
     def __len__(self):
-        return self.data.size(0)
+        return self.data.shape[0]
 
     def __getitem__(self, idx):
         data = self.data[idx]

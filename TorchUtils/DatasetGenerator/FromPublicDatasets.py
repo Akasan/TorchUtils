@@ -27,10 +27,48 @@ __DEFAULT_TRANSFORM = transforms.Compose([transforms.ToTensor(),
 
 
 def _generate_dataset(datasets, root, download, transform, train):
+    """ _generate_dataset
+
+    Arguments:
+    ----------
+        datasets {torchvision.datasets} -- dataset in __DATASET
+        root {str} -- root directory of dataset
+        download {bool} -- whether download dataset or not
+        transform {torchvision.transforms} -- data transformer
+        train {bool} -- whether generate training dataset or not
+
+    Returns:
+    --------
+        {torch.utils.data.Dataset} -- generated dataset
+
+    Examples:
+    ---------
+        >>> train_dataset = _generate_dataset(__DATASET["MNIS"], "./data", True, None, True)
+    """
     return datasets(root=root, train=train, download=download, transform=transform)
 
 
 def _generate_loader(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
+    """ _generate_loader
+
+    Arguments:
+    ----------
+        datasets {torch.utils.data.Dataset} -- dataset
+
+    Keyword Arguments:
+    ------------------
+        root {str} -- root directory of dataset (default: "./data")
+        download {bool} -- whether download dataset or not (default: True)
+        transform {[type]} -- data transformer (default: None)
+        batch_size {int} -- batch size (default: 128)
+        shuffle {bool} -- whether shuffle dataset or not (default: True)
+        num_workers {int} -- the number of workers (default: 2)
+
+    Returns:
+    --------
+        {torch.utils.data.DataLoader} -- train dataloader
+        {torch.utils.data.DataLoader} -- test dataloader
+    """
     train_dataset = None
     test_dataset = None
     train_dataset = _generate_dataset(datasets, root, download, transform, True)
@@ -40,7 +78,8 @@ def _generate_loader(datasets, root="./data", download=True, transform=None, bat
     return train_loader, test_loader
 
 
-def _generate_loader_with_val(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
+def _generate_loader_with_val(datasets, root="./data", download=True, transform=None, batch_size=128,
+                              shuffle=True, num_workers=2, validation_rate=0.2):
     train_dataset = None
     test_dataset = None
     train_dataset_tmp = _generate_dataset(datasets, root, download, transform, True)
@@ -79,7 +118,7 @@ def load_public_dataset(name="MNIST", root="./data", download=True,
         >>> train_loader_cifar10, test_loader_cifer10 = load_public_datasets("CIFAR10")
     """
     dataset = __DATASET[name]
-    return _generate_loader(dataset, root="./data", download=download, transform=transform,
+    return _generate_loader(dataset, root=root, download=download, transform=transform,
                             batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
 
@@ -93,7 +132,7 @@ def load_public_dataset_with_val(name="MNIST", root="./data", download=True,
         name {str} -- public dataset's name (default: "MNIST")
         root {str} -- root directory where dataset is (default: "./data")
         download {bool} -- True when you want to download dataset (default: True)
-        transform {[type]} -- transform (default: None)
+        transform {torchvision.transforms} -- transform (default: None)
         batch_size {int} -- batch size (default: 128)
         shuffle {bool} -- True when you want to shuffle dataset (default: True)
         num_workers {int} -- num workers (default: 2)
@@ -128,7 +167,7 @@ def _append_data(whole_data, whole_labels, data, label, idx):
 
 
 def get_custom_MNIST(train_labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], root="./data", download=True, transform=None,
-                     batch_size=128, shuffle=True, num_workers=2, from_dataset="both"):
+                     batch_size=128, shuffle=True, num_workers=2, from_dataset="both", val_rate=None):
     """ get_custom_MNIST
 
     Keyword Arguments:
@@ -144,6 +183,7 @@ def get_custom_MNIST(train_labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], root="./data",
                               boto: from training and testing dataset
                               train: from training dataset
                               test: from testing dataset
+        val_rate {float} -- validataion rate (default: None)
 
     Returns:
     --------
@@ -180,11 +220,16 @@ def get_custom_MNIST(train_labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], root="./data",
         test_data, test_label = _append_data(whole_data, whole_labels,  test_data, test_label, idx)
 
     train_dataset = CustomDataset(train_data, train_label, transform)
+    train_dataset, val_dataset = split_dataset(train_dataset, val_rate)
     test_dataset = CustomDataset(test_data, test_label, transform)
     train_dataloader = generate_dataloader(train_dataset, batch_size, shuffle, num_workers)
     test_dataloader = generate_dataloader(test_dataset, batch_size, shuffle, num_workers)
-    print(train_dataloader.dataset.size(), test_dataloader.dataset.size())
-    return train_dataloader, test_dataloader
+
+    if val_rate is not None:
+        val_dataloader = generate_dataloader(val_dataset, batch_size, shuffle, num_workers)
+        return train_dataloader, val_dataloader, test_dataloader
+    else:
+        return train_dataloader, test_dataloader
 
 
 def get_public_datasets_list():
