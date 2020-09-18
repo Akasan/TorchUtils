@@ -82,10 +82,6 @@ class DataAugmentationGenerator:
         Keyword Arguments:
         ------------------
             p {float} -- probability (default: 0.5)
-
-        Examples:
-        ---------
-            >>>
         """
         self._append(transforms.RandomHorizontalFlip(p), is_random_apply, random_apply_rate)
 
@@ -95,10 +91,6 @@ class DataAugmentationGenerator:
         Keyword Arguments:
         ------------------
             p {float} -- probability (default: 0.5)
-
-        Examples:
-        ---------
-            >>>
         """
         self._append(transforms.RandomVerticalFlip(p), is_random_apply, random_apply_rate)
 
@@ -121,10 +113,6 @@ class DataAugmentationGenerator:
             scale {tuple} -- [description] (default: (0.02, 0.33))
             ratio {tuple} -- [description] (default: (0.3, 3.3))
             value {int} -- [description] (default: 0)
-
-        Examples:
-        ---------
-            >>>
         """
         self._append(transforms.RandomErasing(p=p, scale=scale, ratio=ratio, value=value),
                      is_random_apply, random_apply_rate)
