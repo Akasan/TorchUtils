@@ -1,5 +1,8 @@
 import torch
 import torchvision
+import warnings
+warnings.simplefilter("ignore")
+
 
 def generate_dataloader(dataset, batch_size, shuffle, num_workers):
     """ generate_dataloader

@@ -2,6 +2,9 @@ from torch import nn
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+import warnings
+warnings.simplefilter("ignore")
+
 
 class AnalyzedLinear(nn.Module):
     def __init__(self, input_dim, output_dim):

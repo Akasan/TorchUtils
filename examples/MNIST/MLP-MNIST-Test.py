@@ -9,6 +9,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch_lr_finder import LRFinder
+import warnings
+warnings.simplefilter("ignore")
 
 
 class Model(nn.Module):

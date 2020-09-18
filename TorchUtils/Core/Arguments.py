@@ -1,4 +1,6 @@
 import argparse
+import warnings
+warnings.simplefilter("ignore")
 
 
 def parse_args():

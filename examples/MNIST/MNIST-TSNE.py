@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 # from torch_lr_finder import LRFinder
 from sklearn.manifold import TSNE
 
-from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
+# from TorchUtils.Analyzer.LayerAnalyzer import AnalyzedLinear
 from TorchUtils.Analyzer.ManifoldAnalyzer import (LDAAnalyzer, PCAAnalyzer,
                                                   SVCAnalyzer,
                                                   TruncatedSVDAnalyzer,
@@ -25,7 +25,8 @@ from TorchUtils.ModelGenerator.MLP import MLP
 from TorchUtils.PipeLine.PipeLine import PipeLine
 from TorchUtils.Trainer.CNNTrainer import CNNClassificationTrainer
 from TorchUtils.Layers.ConvLayers import FireModule
-
+import warnings
+warnings.simplefilter("ignore")
 
 
 class Model(nn.Module):
@@ -42,7 +43,8 @@ class Model(nn.Module):
         self.activation3 = nn.ReLU(True)
         self.pre_classifier = nn.ModuleList([self.linear1, self.activation2, self.linear2, self.activation3])
 
-        self.linear3 = AnalyzedLinear(128, 10)
+        # self.linear3 = AnalyzedLinear(128, 10)
+        self.linear3 = nn.Linear(128, 10)
         self.activation4 = nn.Softmax()
         self.classifier = nn.ModuleList([self.linear3, self.activation4])
 
@@ -111,24 +113,24 @@ def train_lda(data):
 
 if __name__ == "__main__":
     args = parse_args()
-    # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-    # train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
-    #                                                          transform=transform,
-    #                                                          batch_size=args.batch_size)
-    # model = Model()
-    # optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
-    # criterion = nn.CrossEntropyLoss()
-    # trainer = CNNClassificationTrainer(model, criterion, optimizer)
-    # trainer.fit(train_loader, epochs=args.epochs, validation_loader=val_loader)
-    # outputs, labels = predict(model, test_loader)
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+    train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST",
+                                                             transform=transform,
+                                                             batch_size=args.batch_size)
+    model = Model()
+    optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-5)
+    criterion = nn.CrossEntropyLoss()
+    trainer = CNNClassificationTrainer(model, criterion, optimizer)
+    trainer.fit(train_loader, epochs=args.epochs, validation_loader=val_loader)
+    outputs, labels = predict(model, test_loader)
 
-    # svd = TruncatedSVDAnalyzer()
-    # svd.fit(outputs)
-    # outputs = svd.predict(outputs)
-    # svc_visualizer = SVCAnalyzer()
-    # svc_visualizer.fit(outputs, labels)
-    # svc_visualizer.evaluate(outputs, labels)
-    # svc_visualizer.plot(outputs, labels)
+    svd = TruncatedSVDAnalyzer()
+    svd.fit(outputs)
+    outputs = svd.predict(outputs)
+    svc_visualizer = SVCAnalyzer()
+    svc_visualizer.fit(outputs, labels)
+    svc_visualizer.evaluate(outputs, labels)
+    svc_visualizer.plot(outputs, labels)
 
     pipeline = PipeLine()
     pipeline.add_function(train_model, False, args)

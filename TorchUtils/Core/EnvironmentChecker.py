@@ -1,4 +1,6 @@
 import torch
+import warnings
+warnings.simplefilter("ignore")
 
 
 def get_device_type():

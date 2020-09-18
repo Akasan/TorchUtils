@@ -11,6 +11,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
+import warnings
+warnings.simplefilter("ignore")
+
 
 def _get_standard_scaler(data):
     """ _get_standard_scaler

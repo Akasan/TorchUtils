@@ -1,4 +1,6 @@
 import torch
+import warnings
+warnings.simplefilter("ignore")
 
 
 class CustomDataset(torch.utils.data.Dataset):

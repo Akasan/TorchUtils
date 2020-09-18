@@ -7,6 +7,9 @@ from ._LoaderGenerator import generate_dataloader
 from ._CustomDataset import CustomDataset
 from ._SplitDataset import split_dataset
 
+import warnings
+warnings.simplefilter("ignore")
+
 
 __DATASET = {
     "MNIST": torchvision.datasets.MNIST,

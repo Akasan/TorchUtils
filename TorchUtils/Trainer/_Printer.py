@@ -3,6 +3,8 @@ from math import log10
 import colorama
 colorama.init()
 from colorama import Fore
+import warnings
+warnings.simplefilter("ignore")
 
 
 def print_result(current_epoch, epochs, train_acc=None, train_loss=None,
@@ -94,8 +96,11 @@ def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=
     time_text = ""
     if whole_time is not None:
         iter_per_sec = current_cnt / whole_time
-        predict_remain_time = (dataset_length - current_cnt) * iter_per_sec
-        time_text = f"[{whole_time//60: 2d}:{whole_time-((whole_time//60)*60)}, {iter_per_sec}it/s]"
+        predict_remain_time = (dataset_length - current_cnt) / iter_per_sec
+        predict_remain_time = predict_remain_time if predict_remain_time > 0 else 0
+        time_text = "".join([f"[{str(int(whole_time//60)).zfill(2)}:{str(int(whole_time-((whole_time//60)*60))).zfill(2)}",
+                             f" / {str(int(predict_remain_time//60)).zfill(2)}:{str(int(predict_remain_time-((predict_remain_time//60)*60))).zfill(2)},",
+                             f" {int(iter_per_sec)}it/s]"])
 
     if is_training:
         sys.stdout.write(f"\rTraining Progress [{result}] {percentage: 3d}%  {time_text}")
