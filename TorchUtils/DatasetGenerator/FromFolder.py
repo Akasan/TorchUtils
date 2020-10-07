@@ -12,7 +12,21 @@ from ._SplitDataset import split_dataset
 
 # TODO 複数ラベルバージョン(CSVで管理)も作る
 class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
-    def __init__(self, dir_name, transform=None, label=0, ext="jpg", shuffle=True):
+    """ You can make dataset for one specified folder
+
+    Examples:
+    ---------
+        - folder tree
+            A--1.jpg
+             |-2.jpg ...
+            B--1.jpg
+             |-2.jpg ...
+
+        >>> datasetA = SingleFolderSingleLabelDataset("A")
+        >>> datasetB = SingleFolderSingleLabelDataset("B")
+    """
+
+    def __init__(self, dir_name, transform=None, label=None, ext="jpg", shuffle=True):
         """
         Arguments:
         ----------
@@ -23,8 +37,8 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
         ------------------
             transform {torchvision.transforms} -- transforms (default: None)
                                                   If transforms is None, the following transform will be used.
-                                                  transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
-            label {int} -- label (default: 0)
+                                                  transforms.Compose([transforms.ToTensor()])
+            label {int} -- if you dont specified this argument, the dir_name will be set as label (default: None)
             ext {str} -- image file's extension (default: "jpg")
             shuffle {bool} -- set True when you want to shuffle the order of images (default: True)
 
@@ -33,20 +47,25 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
             >>> custom_dataset = SingleFolderSingleLabelDataset(dir_name="./data",
         """
         self.DIR_NAME = dir_name
-        self.LABEL = label
+
+        if label is None:
+            self.LABEL = dir_name.replace("/", "\\").split("\\")[-1]
+        else:
+            self.LABEL = label
 
         if transform is None:
-            transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+            transform = transforms.Compose([transforms.ToTensor()])
 
         self.transform = transform
-        self.files = os.listdir(os.path.abspath(dir_name))
-        self.files = [os.path.join(os.path.abspath(dir_name), f) for f in self.files if f.split(".")[-1] == ext]
+        files = os.listdir(os.path.abspath(dir_name))
+        self.files = [os.path.join(os.path.abspath(dir_name), f) for f in files if f.split(".")[-1] == ext]
+        self.length = len(self.files)
 
         if shuffle:
             random.shuffle(self.files)
 
     def __len__(self):
-        return len(self.files)
+        return self.length
 
     def __getitem__(self, i):
         img = Image.open(self.files[i])
@@ -55,11 +74,27 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
 
 
 def generate_dataset(folder_path, transform):
+    """ generate dataset from folder
+
+    Arguments:
+    ----------
+        folder_path {str} -- folder path
+        transform {torchvision.transforms} -- transform
+
+    Returns:
+    --------
+        {torch.utils.data.Dataset} -- dataset
+
+    Examples:
+    ---------
+        >>> transform = transforms.Compose([transforms.ToTensor()])
+        >>> dataset = generate_dataset("root", transform)
+    """
     return ImageFolder(folder_path, transform)
 
 
-def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, is_single_labels=False, ext="jpg", label=0):
-    """ generate_dataloader
+def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, is_single_label=False, ext="jpg", label=0):
+    """ generate dataloader from folder
 
     Arguments:
     ----------
@@ -71,23 +106,26 @@ def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=Tru
         batch_size {int} -- batch size (default: 128)
         shuffle {bool} -- whether data will be shuffled or not (default: True)
         num_workers {int} -- the number of workers (default: 2)
-        is_single_labels {bool} -- set as True when specified folder only contains data which has the same label (default: False)
+        is_single_label {bool} -- set as True when specified folder only contains data which has the same label (default: False)
 
     Returns:
     --------
         {torch.utils.data.DataLoader} -- dataloader
+
+    Examples:
+    ---------
+        >>> dataloader = generate_dataloader("root")
     """
-    if is_single_labels:
+    if is_single_label:
         dataset = SingleFolderSingleLabelDataset(folder_path, transform, label, ext, shuffle)
     else:
         dataset = generate_dataset(folder_path, transform)
 
-    loader = gd(dataset, batch_size, shuffle, num_workers)
-    return loader
+    return gd(dataset, batch_size, shuffle, num_workers)
 
 
 def generate_dataloader_with_val(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
-    """ generate_dataloader_with_val
+    """ generate dataloder from folder with validation
 
     Arguments:
     ----------
