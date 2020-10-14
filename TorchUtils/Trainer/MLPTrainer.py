@@ -117,15 +117,15 @@ class MLPClassificationTrainer(TrainerBase):
                 self.model.train()
                 st = time.time()
 
-                for i, (images, labels) in enumerate(train_loader, 1):
+                for i, (inputs, labels) in enumerate(train_loader, 1):
                     show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i, whole_time=time.time()-st)
 
                     if type(reshape_size) == tuple:
-                        images = images.view(*reshape_size)
+                        inputs = inputs.view(*reshape_size)
 
-                    images, labels = convert_device(images, labels)
+                    inputs, labels = convert_device(inputs, labels)
                     self.optimizer.zero_grad()
-                    outputs = self.model(images)
+                    outputs = self.model(inputs)
                     loss = self.criterion(outputs, labels)
                     loss.backward()
                     self.optimizer.step()
@@ -146,14 +146,14 @@ class MLPClassificationTrainer(TrainerBase):
 
                     self.model.eval()
                     with torch.no_grad():
-                        for i, (images, labels) in enumerate(validation_loader, 1):
+                        for i, (inputs, labels) in enumerate(validation_loader, 1):
                             show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
 
                             if type(reshape_size) == tuple:
-                                images = images.view(*reshape_size)
+                                inputs = inputs.view(*reshape_size)
 
-                            images, labels = convert_device(images, labels)
-                            outputs = self.model(images)
+                            inputs, labels = convert_device(inputs, labels)
+                            outputs = self.model(inputs)
                             loss = self.criterion(outputs, labels)
                             val_acc += calculate_accuracy(outputs, labels)
                             val_loss += loss.item()
@@ -189,14 +189,14 @@ class MLPClassificationTrainer(TrainerBase):
         total_labels = None
 
         self.model.eval()
-        for i, (images, labels) in enumerate(test_loader, 1):
+        for i, (inputs, labels) in enumerate(test_loader, 1):
             show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
 
             if type(reshape_size) == tuple:
-                images = images.view(*reshape_size)
+                inputss = inputss.view(*reshape_size)
 
-            images = images.to(self.device)
-            outputs = self.model(images)
+            inputs = inputs.to(self.device)
+            outputs = self.model(inputs)
 
             if total_outputs is None:
                 total_outputs = outputs
@@ -222,10 +222,10 @@ class MLPClassificationTrainer(TrainerBase):
 
         self.model.eval()
         with torch.no_grad():
-            for i, (images, labels) in enumerate(test_loader):
+            for i, (inputs, labels) in enumerate(test_loader):
                 show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
-                images, labels = convert_device(images, labels)
-                outputs = self.model(images)
+                inputs, labels = convert_device(inputs, labels)
+                outputs = self.model(inputs)
                 acc += calculate_accuracy(outputs, labels)
                 loss += self.criterion(outputs, labels).item()
 

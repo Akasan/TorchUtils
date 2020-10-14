@@ -94,7 +94,7 @@ def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=
     percentage = 100 if percentage > 100 else percentage
 
     time_text = "\t\t"
-    if whole_time is not None:
+    if whole_time is not None and not whole_time == 0:
         iter_per_sec = current_cnt / whole_time
         predict_remain_time = (dataset_length - current_cnt) / iter_per_sec
         predict_remain_time = predict_remain_time if predict_remain_time > 0 else 0
