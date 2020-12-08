@@ -2,12 +2,14 @@ from math import ceil, floor
 from pprint import pprint
 import torch
 import torch.nn as nn
+from typing import Tuple, List
 
 from .TypeChecker import get_type
 from .Errors import *
 
 
-def check_shape(model, input_shape, output_shape=None, is_no_shape_check=False, is_print=True):
+def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: bool = None,
+                is_no_shape_check: bool = False, is_print: bool = True) -> None:
     """ check_shape
 
     Arguments:

@@ -1,29 +1,30 @@
+import torch
 from torch import nn
 import seaborn as sns
 import matplotlib.pyplot as plt
+from typing import Dict
 
 import warnings
 warnings.simplefilter("ignore")
 
 
 class AnalyzedLinear(nn.Module):
-    def __init__(self, input_dim, output_dim):
+
+    def __init__(self, input_dim: int, output_dim: int):
         super(AnalyzedLinear, self).__init__()
         self.layer = nn.Linear(input_dim, output_dim)
         self.INPUT_DIM = input_dim
         self.OUTPUT_DIM = output_dim
-        self.outputs = {i: None for i in range(output_dim)}
+        self.outputs: Dict[int, torch.Tensor] = None
         self.distribution = {i: {} for i in range(output_dim)}
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         outputs = self.layer(x)
-        for i in range(self.OUTPUT_DIM):
-            self.outputs[i] = outputs[:, i]
-
+        self.outputs = {i: outputs[:, i] for i in range(self.OUTPUT_DIM)}
         self._calculate_distribution()
         return self.layer(x)
 
-    def _calculate_distribution(self):
+    def _calculate_distribution(self) -> None:
         for i in range(self.OUTPUT_DIM):
             self.distribution[i]["mean"] = self.outputs[i].mean().item()
             self.distribution[i]["std"] = self.outputs[i].std().item()
@@ -42,5 +43,5 @@ class AnalyzedConv2d(nn.Module):
         super(AnalyzedConv2d, self).__init__()
         self.layer = nn.Conv2d(*args, **kwargs)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.layer(x)
