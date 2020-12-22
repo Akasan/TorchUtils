@@ -1,7 +1,7 @@
 import torch
 
 
-def split_dataset(dataset, validation_rate):
+def split_dataset(dataset, validation_rate: float):
     """ split_dataset to training dataset and validation dataset
 
     Arguments:
