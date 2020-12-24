@@ -16,7 +16,7 @@ class AnalyzedLinear(nn.Module):
         self.INPUT_DIM = input_dim
         self.OUTPUT_DIM = output_dim
         self.outputs: Dict[int, torch.Tensor] = None
-        self.distribution = {i: {} for i in range(output_dim)}
+        self.distribution: Dict[int, Dict[str, float]] = dict()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         outputs = self.layer(x)
@@ -25,11 +25,10 @@ class AnalyzedLinear(nn.Module):
         return self.layer(x)
 
     def _calculate_distribution(self) -> None:
-        for i in range(self.OUTPUT_DIM):
-            self.distribution[i]["mean"] = self.outputs[i].mean().item()
-            self.distribution[i]["std"] = self.outputs[i].std().item()
+        self.distribution = {i: {"mean": out.mean().item(), "std": out.std().item()}
+                             for i, out in self.outputs.items()}
 
-    def plot_dist(self):
+    def plot_dist(self) -> None:
         """ plot_dist"""
         for i in range(self.OUTPUT_DIM):
             plt.subplot(1, self.OUTPUT_DIM, i+1)
