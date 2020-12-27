@@ -2,7 +2,7 @@ from math import ceil, floor
 from pprint import pprint
 import torch
 import torch.nn as nn
-from typing import Tuple, List
+from typing import Any, Tuple, List, Union
 
 from .TypeChecker import get_type
 from .Errors import *
@@ -98,13 +98,14 @@ def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: bool = 
         is_exact_output_shape = _is_exact_output_shape(output_shape, shape_history[i])
 
 
-def _is_available_shape(previous_output, current_input, previous_output_shape, current_input_shape):
+def _is_available_shape(previous_output: Tuple[int], current_input: Tuple[int],
+                        previous_output_shape: str, current_input_shape: str):
     """ _is_available_shape
 
     Arguments:
     ----------
-        previous_output {tuple(int)} -- previous layer's output shape
-        current_input {tuple(int)} -- current layer's input shape
+        previous_output {Tuple(int)} -- previous layer's output shape
+        current_input {Tuple(int)} -- current layer's input shape
         previous_output_shape {str} -- dimension of precious layer
         current_input_shape {str} -- dimension of current layer
 
@@ -113,81 +114,100 @@ def _is_available_shape(previous_output, current_input, previous_output_shape, c
         {bool} -- True when specified layers' relationship acccording to the in-out shape is correct
     """
     if previous_output_shape == "2d" and current_input_shape == "2d":
-        return True if previous_output[-1] == current_input else False
+        return previous_output[-1] == current_input
 
     elif previous_output_shape == "2d" and current_input_shape == "1d":
         previous_all_cell = previous_output[0] * previous_output[1] * previous_output[2]
-        return True if previous_all_cell == current_input else False
+        return previous_all_cell == current_input
 
     elif previous_output_shape == "1d" and current_input_shape == "1d":
-        return True if previous_output == current_input else False
+        return previous_output == current_input
 
     return False
 
 
-def _calculate_convolutional_output_shape(input_shape, output_chennels, kernel_size, padding=(0, 0), stride=(1, 1)):
-    """ _calculate_convolutional_output_shape
+def _calculate_convolutional_output_shape(input_shape: Tuple[int], output_chennels: int, kernel_size: Union[int, Tuple[int]],
+                                          padding: Tuple[int] = (0, 0), stride: Tuple[int] = (1, 1)) -> Tuple[int]:
+    """ calculate convolutional output shape
 
     Arguments:
     ----------
-        input_shape {tuple(int)} -- input shape
-        chennels {int} -- output channels
-        kernel_size {int, tuple(int)} -- kernel size
+        input_shape {Tuple[int]} -- input shape
+        output_chennels {int} -- the number of output channels
+        kernel_size {Union[int, Tuple[int]]} -- kernel size
 
     Keyword Arguments:
     ------------------
-        padding {int} -- padding (default: 0)
-        stride {int} -- stride (default: 1)
+        padding {Tuple[int]} -- padding (default: (0, 0))
+        stride {Tuple[int]} -- stride (default: (1, 1))
 
     Returns:
     --------
-        {tuple(int)} -- output shape
+        {Tuple[int]} -- output shape of convolutional layer
     """
     output_height = ceil((input_shape[0] + 2*padding[0] - kernel_size[0]) / stride[0] + 1)
     output_width = ceil((input_shape[1] + 2*padding[1] - kernel_size[1]) / stride[1] + 1)
     return (output_height, output_width, output_chennels)
 
 
-def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, dilation):
-    """ _calculate_pooling_output_shape
+def _to_list(item: Any, size: int = 2) -> List[Any]:
+    return item if isinstance(item, list) else [item] * size
+
+
+def _calculate_pooling_output_shape(input_shape: Tuple[int], kernel_size: Union[int, Tuple[int]],
+                                    padding: Union[int, Tuple[int]], stride: Union[int, Tuple[int]],
+                                    dilation: Union[int, Tuple[int]]) -> Tuple[int]:
+    """ calculate pooling output shape
 
     Arguments:
     ----------
-        input_shape {tuple(int)} -- input shape
-        kernel_size {int, tuple(int)} -- kernel size
-        padding {int} -- padiding
-        stride {int} -- stride
-        dilation {int} -- dilation
+        input_shape {Tuple[int]} -- input shape
+        kernel_size {Union[int, Tuple[int]]} -- kernel size
+        padding {Union[int, Tuple[int]]} -- padding
+        stride {Union[int, Tuple[int]]} -- stride
+        dilation {Union[int, Tuple[int]]} -- dilation
 
     Returns:
     --------
-        {tuple(int)} -- output shape
+        {Tuple[int]} -- output shape of pooling layer
     """
-    to_list = lambda x: [x, x]
-
-    if type(kernel_size) == int:
-        kernel_size = [kernel_size, kernel_size]
-
-    if type(padding) == int:
-        padding = [padding, padding]
-
-    if type(stride) == int:
-        stride = [stride, stride]
-
-    if type(dilation) == int:
-        dilation = [dilation, dilation]
-
+    kernel_size = _to_list(kernel_size)
+    padding = _to_list(padding)
+    stride = _to_list(stride)
+    dilation = _to_list(dilation)
     output_height = floor((input_shape[0] + 2 * padding[0] - dilation[0] * (kernel_size[0] -1) - 1) / stride[0] + 1)
     output_width = floor((input_shape[1] + 2 * padding[1] - dilation[1] * (kernel_size[1] -1) - 1) / stride[1] + 1)
     return (output_height, output_width, input_shape[-1])
 
 
-def _calculate_upsample_shape(input_shape, scale_factor):
+def _calculate_upsample_shape(input_shape: Tuple[int], scale_factor: int) -> Tuple[int]:
+    """ calculate upsample shape
+
+    Arguments:
+    ----------
+        input_shape {Tuple[int]} -- input shape
+        scale_factor {int} -- scale
+
+    Returns:
+    --------
+        {Tuple[int]} -- output shape of upsample layer
+    """
     return (input_shape[0]*scale_factor, input_shape[1]*scale_factor, input_shape[-1])
 
 
-def _is_exact_output_shape(exact_shape, model_shape):
-    return True if exact_shape == model_shape["out"] else False
+def _is_exact_output_shape(exact_shape: Tuple[int], model_shape: Tuple[int]) -> bool:
+    """ check whether specified shape are same
+
+    Arguments:
+    ----------
+        exact_shape {Tuple[int]} -- expected output shape
+        model_shape {Tuple[int]} -- exact output shape of model
+
+    Returns:
+    --------
+        {bool} -- True when both shape is the same.
+    """
+    return exact_shape == model_shape["out"]
 
 
 

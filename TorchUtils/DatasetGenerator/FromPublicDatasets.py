@@ -1,7 +1,9 @@
 import torch
 import torchvision
-import torchvision.transforms as transforms
+from torchvision import transforms
+from torchvision.transforms import Compose
 import numpy as np
+from typing import List
 
 from ._LoaderGenerator import generate_dataloader
 from ._CustomDataset import CustomDataset
@@ -26,7 +28,8 @@ __DEFAULT_TRANSFORM = transforms.Compose([transforms.ToTensor(),
                                           transforms.Normalize((0.5,), (0.5,))])
 
 
-def _generate_dataset(datasets, root, download, transform, train):
+def _generate_dataset(datasets: torchvision.datasets, root: str,
+                      download: bool, transform: Compose, train: bool):
     """ _generate_dataset
 
     Arguments:
@@ -48,7 +51,9 @@ def _generate_dataset(datasets, root, download, transform, train):
     return datasets(root=root, train=train, download=download, transform=transform)
 
 
-def _generate_loader(datasets, root="./data", download=True, transform=None, batch_size=128, shuffle=True, num_workers=2):
+def _generate_loader(datasets: torchvision.datasets, root: str = "./data", download: bool = True,
+                     transform: Compose = None, batch_size: int = 128, shuffle: bool = True,
+                     num_workers: int = 2):
     """ _generate_loader
 
     Arguments:
@@ -78,8 +83,10 @@ def _generate_loader(datasets, root="./data", download=True, transform=None, bat
     return train_loader, test_loader
 
 
-def _generate_loader_with_val(datasets, root="./data", download=True, transform=None, batch_size=128,
-                              shuffle=True, num_workers=2, validation_rate=0.2):
+def _generate_loader_with_val(datasets: torchvision.datasets, root: str = "./data",
+                              download: bool = True, transform: Compose = None,
+                              batch_size: int = 128, shuffle: bool = True,
+                              num_workers: int = 2, validation_rate: float = 0.2):
     train_dataset = None
     test_dataset = None
     train_dataset_tmp = _generate_dataset(datasets, root, download, transform, True)
@@ -92,8 +99,9 @@ def _generate_loader_with_val(datasets, root="./data", download=True, transform=
 
 
 
-def load_public_dataset(name="MNIST", root="./data", download=True,
-                        transform=None, batch_size=128, shuffle=True, num_workers=2):
+def load_public_dataset(name: str = "MNIST", root: str = "./data", download: bool = True,
+                        transform: Compose = None, batch_size: int = 128, shuffle: bool = True,
+                        num_workers: int = 2):
     """ load_public_datasets
 
     Keyword Arguments:
@@ -122,9 +130,9 @@ def load_public_dataset(name="MNIST", root="./data", download=True,
                             batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
 
-def load_public_dataset_with_val(name="MNIST", root="./data", download=True,
-                                 transform=None, batch_size=128, shuffle=True,
-                                 num_workers=2, validation_rate=0.2):
+def load_public_dataset_with_val(name: str = "MNIST", root: str = "./data", download: bool = True,
+                                 transform: Compose = None, batch_size: int = 128, shuffle: bool = True,
+                                 num_workers: int = 2, validation_rate: float = 0.2):
     """ load_public_datasets
 
     Keyword Arguments:
@@ -155,7 +163,8 @@ def load_public_dataset_with_val(name="MNIST", root="./data", download=True,
                                      batch_size=batch_size, shuffle=shuffle, num_workers=num_workers, validation_rate=validation_rate)
 
 
-def _append_data(whole_data, whole_labels, data, label, idx):
+def _append_data(whole_data: torch.Tensor, whole_labels: torch.Tensor, data: torch.Tensor,
+                 label: torch.Tensor, idx: int):
     if data is None:
         data = whole_data[idx, :, :]
         label = whole_labels[idx]
@@ -166,8 +175,10 @@ def _append_data(whole_data, whole_labels, data, label, idx):
     return data, label
 
 
-def get_custom_MNIST(train_labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], root="./data", download=True, transform=None,
-                     batch_size=128, shuffle=True, num_workers=2, from_dataset="both", val_rate=None):
+def get_custom_MNIST(train_labels: List[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], root: str = "./data",
+                     download: bool = True, transform: Compose = None, batch_size: int = 128,
+                     shuffle: bool = True, num_workers: int = 2, from_dataset: str = "both",
+                     val_rate: float = None):
     """ get_custom_MNIST
 
     Keyword Arguments:

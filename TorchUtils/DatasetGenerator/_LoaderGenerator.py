@@ -4,7 +4,8 @@ import warnings
 warnings.simplefilter("ignore")
 
 
-def generate_dataloader(dataset, batch_size, shuffle, num_workers):
+def generate_dataloader(dataset: torch.utils.data.Dataset, batch_size: int,
+                        shuffle: bool, num_workers: int) -> torch.utils.data.DataLoader:
     """ generate_dataloader
 
     Arguments:
