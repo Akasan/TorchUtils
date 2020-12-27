@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
+from typing import Any
 
 
 __TORCH_TENSOR_TYPE = type(torch.tensor([1]))
 
 
-def is_tensor(x):
+def is_tensor(x: torch.Tensor) -> bool:
     """ check whether specified value x is torch.tesnsor or not
 
     Arguments:
@@ -34,7 +35,7 @@ __TYPE = {
     nn.Dropout: "dropout",
 }
 
-def get_type(layer, as_string=True):
+def get_type(layer: Any, as_string: bool = True) -> Any:
     """ get type of layer
 
     Arguments:

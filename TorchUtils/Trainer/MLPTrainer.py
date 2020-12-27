@@ -1,6 +1,8 @@
 import sys
 import time
 import warnings
+from typing import List, Dict, Tuple, Union
+import numpy as np
 
 import colorama
 import matplotlib.pyplot as plt
@@ -19,7 +21,7 @@ warnings.simplefilter("ignore")
 colorama.init()
 
 
-def calculate_accuracy(outputs, labels):
+def calculate_accuracy(outputs: torch.Tensor, labels: torch.Tensor) -> float:
     return (outputs.max(1)[1] == labels).sum().item()
 
 
@@ -51,7 +53,8 @@ class MLPClassificationTrainer(TrainerBase):
         >>> trainer.save()
     """
 
-    def __init__(self, model, criterion, optimizer, device=None):
+    def __init__(self, model: torch.nn.Module, criterion: torch.nn.module.loss,
+                 optimizer: torch.optim, device: str = None):
         """ __init__
 
         Arguments:
@@ -68,10 +71,10 @@ class MLPClassificationTrainer(TrainerBase):
         self.criterion = criterion
         self.optimizer = optimizer
         self.device = get_device_type() if device is None else device
-        self.train_loss_history = []
-        self.train_acc_history = []
-        self.val_loss_history = []
-        self.val_acc_history = []
+        self.train_loss_history: List[float] = []
+        self.train_acc_history: List[float] = []
+        self.val_loss_history: List[float] = []
+        self.val_acc_history: List[float] = []
         summarize_trainer(self.model, self.criterion, self.optimizer)
 
     def reset_history(self):
@@ -81,7 +84,8 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
 
-    def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
+    def fit(self, train_loader: torch.utils.data.dataloader.DataLoader, epochs: int, reshape_size: Tuple[int] = None,
+            verbose_rate: int = 1, validation_loader: torch.utils.data.dataloader.DataLoader=None) -> None:
         """ train model
 
         Arguments:
@@ -169,7 +173,8 @@ class MLPClassificationTrainer(TrainerBase):
         except KeyboardInterrupt:
             respond_exeption(self.model)
 
-    def predict(self, test_loader, reshape_size=None, to_numpy=False):
+    def predict(self, test_loader: torch.utils.data.dataloader.DataLoader, reshape_size=None,
+                to_numpy: bool = False) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """ predict
 
         Arguments:
@@ -210,7 +215,7 @@ class MLPClassificationTrainer(TrainerBase):
         else:
             return total_outputs, total_labels
 
-    def evaluate(self, test_loader):
+    def evaluate(self, test_loader: torch.utils.data.dataloader.DataLoader) -> None:
         """ evaluate
 
         Arguments:
@@ -233,7 +238,7 @@ class MLPClassificationTrainer(TrainerBase):
             acc /= len(test_loader.dataset)
             print(f"Evaluation Accuracy: {acc: .6f}")
 
-    def save(self, model_path="model.pth", is_parameter_only=True):
+    def save(self, model_path: str = "model.pth", is_parameter_only: bool = True) -> None:
         """ save
 
         Keyword Arguments:
@@ -242,7 +247,7 @@ class MLPClassificationTrainer(TrainerBase):
         """
         save_model(self.model, model_path, is_parameter_only)
 
-    def read(self, model_path="model.pth"):
+    def read(self, model_path: str = "model.pth") -> None:
         """ read
 
         Keyword Arguments:
@@ -251,7 +256,7 @@ class MLPClassificationTrainer(TrainerBase):
         """
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
 
-    def plot_result(self):
+    def plot_result(self) -> None:
         """ plot_result"""
         plt.subplot(1, 2, 1)
         plt.plot(self.train_acc_history, label="train", color="r")
