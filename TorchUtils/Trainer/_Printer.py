@@ -1,15 +1,19 @@
+from torch import nn
 import sys
 from math import log10
 import colorama
+import torch
 colorama.init()
 from colorama import Fore
 import warnings
+from typing import Any
 warnings.simplefilter("ignore")
 
 
-def print_result(current_epoch, epochs, train_acc=None, train_loss=None,
-                 val_acc=None, val_loss=None, integer_digit=3, float_digit=6,
-                 time=None):
+def print_result(current_epoch: int, epochs: int, train_acc: float = None,
+                 train_loss: float = None, val_acc: float = None,
+                 val_loss: float = None, integer_digit: int = 3,
+                 float_digit: int = 6, time: float = None):
     """ get_result_text
 
     Arguments:
@@ -55,7 +59,7 @@ def print_result(current_epoch, epochs, train_acc=None, train_loss=None,
     print(result)
 
 
-def summarize_trainer(model, criterion, optimizer):
+def summarize_trainer(model: nn.Module, criterion: Any, optimizer: Any):
     """ summarize_trainer
 
     Arguments:
@@ -74,8 +78,8 @@ def summarize_trainer(model, criterion, optimizer):
     print("\n\n")
 
 
-def show_progressbar(dataset_length, current_cnt, indicator_num=50, is_training=True,
-                     whole_time=None):
+def show_progressbar(dataset_length: int , current_cnt: int , indicator_num: int = 50,
+                     is_training: bool = True, whole_time: float = None):
     """ show_progressbar
 
     Arguments:

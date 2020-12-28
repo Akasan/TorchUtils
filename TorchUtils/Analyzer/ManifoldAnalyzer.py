@@ -10,6 +10,8 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+from abc import abstractmethod, ABCMeta
+from typing import Any
 
 import warnings
 warnings.simplefilter("ignore")
@@ -31,6 +33,48 @@ def _get_standard_scaler(data: np.ndarray) -> StandardScaler:
     return scaler
 
 
+class AnalyzerBase(metaclass=ABCMeta):
+    def __init__(self, analyzer: Any, scaler: Any):
+        self.scaler = scaler
+        self.analyzer = analyzer
+        self.stats = {}
+
+    def fit(self, X: np.ndarray) -> None:
+        if self.scaler is not None:
+            X = self.scaler.transform(X)
+
+        self.analyzer.fit(X)
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        X = X if self.scaler is None else self.scaler.transform(X)
+        return self.analyzer.transform(X)
+
+    def calculate_stats(self, X: np.ndarray, y: np.ndarray) -> None:
+        unique_y = np.unique(y)
+        self.stats = {k: {} for k in unique_y}
+
+        for k in unique_y:
+            idx = y[y==k]
+            transformed = self.analyzer.transform(y[idx])
+            self.stats[k] = {
+                "center_x": transformed[:, 0].mean(),
+                "center_y": transformed[:, 1].mean(),
+                "std_x": transformed[:, 0].std(),
+                "std_y": transformed[:, 1].std(),
+                "num": transformed.shape[0]
+            }
+
+    def plot(self, X: np.ndarray, y: np.ndarray) -> None:
+        pred = self.analyzer.transform(X)
+        plt.scatter(pred[:, 0], pred[:, 1], c=y)
+
+        for k in self.stats:
+            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
+
+        plt.colorbar()
+        plt.show()
+
+
 class TSNEAnalyzer:
     def __init__(self, *args, **kwargs):
         self.tsne = TSNE(*args, **kwargs)
@@ -45,160 +89,27 @@ class TSNEAnalyzer:
         plt.show()
 
 
-class PCAAnalyzer:
-    def __init__(self, *args, **kwargs):
-        self.pca = PCA(n_components=2)
-        self.stats = {}
-        self.scaler = None
-
-    def fit(self, inputs: np.ndarray, is_normalize: bool = True) -> None:
-        if is_normalize:
-            self.scaler = _get_standard_scaler(inputs)
-            inputs = self.scaler.transform(inputs)
-
-        self.pca.fit(inputs)
-
-    def plot(self, inputs: np.ndarray, labels: np.ndarray) -> None:
-        outputs = self.pca.transform(inputs)
-        plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
-        for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
-
-        plt.colorbar()
-        plt.show()
-
-    def calculate_stats(self, inputs: np.ndarray, labels: np.ndarray) -> None:
-        unique_labels = np.unique(labels)
-        self.stats = {k: {} for k in unique_labels}
-
-        for k in unique_labels:
-            idx = labels[labels==k]
-            transformed = self.pca.transform(inputs[idx])
-            self.stats[k]["center_x"] = transformed[:, 0].mean()
-            self.stats[k]["center_y"] = transformed[:, 1].mean()
-            self.stats[k]["std_x"] = transformed[:, 0].std()
-            self.stats[k]["std_y"] = transformed[:, 1].std()
-            self.stats[k]["num"] = transformed.shape[0]
-
-    def predict(self, inputs: np.ndarray) -> np.ndarray:
-        inputs = inputs if self.scaler is None else self.scaler.transform(inputs)
-        return self.pca.transform(inputs)
+class PCAAnalyzer(AnalyzerBase):
+    def __init__(self, n_components: int = 2, scaler: Any = None):
+        super(PCAAnalyzer, self).__init__(PCA(n_components=2), scaler)
 
 
 # 次元削減
-class TruncatedSVDAnalyzer:
-    def __init__(self, *args, **kwargs):
-        self.svd = TruncatedSVD(n_components=2, n_iter=7, random_state=42)
-        self.stats = {}
-        self.scaler = None
-
-    def fit(self, inputs: np.ndarray, is_normalize: bool = True) -> None:
-        if is_normalize:
-            self.scaler = _get_standard_scaler(inputs)
-            inputs = self.scaler.transform(inputs)
-
-        self.svd.fit(inputs)
-
-    def plot(self, inputs: np.ndarray, labels: np.ndarray):
-        outputs = self.svd.transform(inputs)
-        plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
-        for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
-
-        plt.colorbar()
-        plt.show()
-
-    def calculate_stats(self, inputs: np.ndarray, labels: np.ndarray):
-        unique_labels = np.unique(labels)
-        self.stats = {k: {} for k in unique_labels}
-
-        for k in unique_labels:
-            idx = labels[labels==k]
-            transformed = self.pca.transform(inputs[idx])
-            self.stats[k]["center_x"] = transformed[:, 0].mean()
-            self.stats[k]["center_y"] = transformed[:, 1].mean()
-            self.stats[k]["std_x"] = transformed[:, 0].std()
-            self.stats[k]["std_y"] = transformed[:, 1].std()
-            self.stats[k]["num"] = transformed.shape[0]
-
-    def predict(self, inputs: np.ndarray) -> np.ndarray:
-        inputs = inputs if self.scaler is None else self.scaler.transform(inputs)
-        return self.svd.transform(inputs)
+class TruncatedSVDAnalyzer(AnalyzerBase):
+    def __init__(self, n_components: int = 2, n_iter: int = 7,
+                 random_state: int = 42, scaler: Any = None):
+        super(TruncatedSVDAnalyzer, self).__init__(
+            TruncatedSVD(n_components=n_components, n_iter=n_iter,
+                         random_state=random_state),
+            scaler
+        )
 
 
-class LDAAnalyzer:
-    def __init__(self, *args, **kwargs):
-        self.lda = LinearDiscriminantAnalysis()
-        self.stats = {}
-
-    def fit(self, inputs: np.ndarray, labels: np.ndarray):
-        self.scaler = _get_standard_scaler(inputs)
-        inputs = self.scaler.transform(inputs)
-        self.lda.fit(inputs, labels)
-
-    def plot(self, inputs: np.ndarray, labels: np.ndarray):
-        outputs = self.lda.transform(self.scaler.transform(inputs))
-        plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
-        for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
-
-        plt.colorbar()
-        plt.show()
-
-    def predict(self, inputs: np.ndarray) -> np.ndarray:
-        inputs = self.scaler.transform(inputs)
-        return self.lda.transform(inputs)
+class LDAAnalyzer(AnalyzerBase):
+    def __init__(self, scaler: Any = None):
+        super(LDAAnalyzer, self).__init__(LinearDiscriminantAnalysis(), scaler)
 
 
-class SVCAnalyzer:
-    def __init__(self):
-        self.svc = SVC()
-        self.scaler = None
-
-    def fit(self, inputs: np.ndarray, labels: np.ndarray, is_normalize: bool = True):
-        """ fit
-
-        Arguments:
-        ----------
-            inputs {np.ndarray} -- input data
-            labels {np.ndarray} -- label
-        """
-        if is_normalize:
-            self.scaler = _get_standard_scaler(inputs)
-            inputs = self.scaler.transform(inputs)
-
-        self.svc.fit(inputs, labels)
-
-    def predict(self, inputs: np.ndarray) -> np.ndarray:
-        """ predict
-
-        Arguments:
-        ----------
-            inputs {np.ndarray} -- input data
-
-        Returns:
-        --------
-            {np.ndarray} -- predicted label
-        """
-        inputs = inputs if self.scaler is None else self.scaler.transform(inputs)
-        return self.svc.predict(inputs)
-
-    def evaluate(self, inputs: np.ndarray, labels: np.ndarray, metric: str = "accuracy") -> None:
-        """ evaluate
-
-        Arguments:
-        ----------
-            inputs {np.ndarray} -- input data
-            labels {np.ndarray} -- label
-
-        Keyword Arguments:
-        ------------------
-            metric {str} -- evaluation metric (default: "accuracy")
-        """
-        predicted = self.predict(inputs)
-        accuracy = accuracy_score(predicted, labels)
-        print(accuracy)
-
-    def plot(self, data: np.ndarray, labels: np.ndarray) -> None:
-        plot_decision_regions(data, labels.reshape(-1), clf=self.svc, res=0.01, legend=2)
-        plt.show()
+class SVCAnalyzer(AnalyzerBase):
+    def __init__(self, scaler: Any = None):
+        super(SVCAnalyzer, self).__init__(SVC(), scaler)

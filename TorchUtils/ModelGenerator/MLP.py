@@ -4,13 +4,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from ..Core.StrToClass import ACTIVATION
 from ..Core.ShapeChecker import check_shape
+from typing import List
 
 
 # TODO 直接レイヤーオブジェクトを入れてもいいようにする
 
 
 class MLP(nn.Module):
-    def __init__(self, neurons, activations):
+    def __init__(self, neurons: List[int], activations: List[int]):
         super(MLP, self).__init__()
         modules = [nn.Linear(neurons[0], neurons[1])]
         if not activations[0] is None:
@@ -23,7 +24,7 @@ class MLP(nn.Module):
 
         self.model = nn.Sequential(*modules)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
 
