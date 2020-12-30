@@ -41,7 +41,6 @@ class MLPClassificationTrainer(TrainerBase):
 
     Examples:
     ---------
-        >>> # this example is for MNIST classification
         >>> transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
         >>> train_loader, val_loader, test_loader = load_public_dataset_with_val("MNIST", transform=transform)
         >>> model = Model(...)
@@ -85,7 +84,7 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_acc_history = []
 
     def fit(self, train_loader: torch.utils.data.dataloader.DataLoader, epochs: int, reshape_size: Tuple[int] = None,
-            verbose_rate: int = 1, validation_loader: torch.utils.data.dataloader.DataLoader=None) -> None:
+            verbose_rate: int = 1, validation_loader: torch.utils.data.dataloader.DataLoader = None) -> None:
         """ train model
 
         Arguments:
