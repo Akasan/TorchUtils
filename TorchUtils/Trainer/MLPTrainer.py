@@ -211,7 +211,7 @@ class MLPClassificationTrainer(TrainerBase):
                 total_labels = torch.cat((total_labels, labels), 0)
 
         if to_numpy:
-            return total_outputs.detach().numpy(), total_labels.detach().numpy()
+            return total_outputs.to("cpu").detach().numpy(), total_labels.to("cpu").detach().numpy()
         else:
             return total_outputs, total_labels
 

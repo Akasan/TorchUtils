@@ -16,7 +16,9 @@ def respond_exeption(model: torch.nn.Module):
         print(Fore.CYAN + "* ファイル名を入力してください。[デフォルト: model.pth] >>> ", end="")
         filename = input()
         filename = "model.pth" if filename == "" else filename
-        save_model(model, filename)
+        print(Fore.CYAN + "* パラメータだけ保存しますか？ [ Yes: (Y/y), No: (N/n) ] >>> ", end="")
+        is_parameter = True if input() in ("Y", "y") else False
+        save_model(model, filename, is_parameter=is_parameter)
 
     print(Fore.CYAN + "* プログラムを終了します。")
     sys.exit()

@@ -9,7 +9,6 @@ warnings.simplefilter("ignore")
 
 
 class AnalyzedLinear(nn.Module):
-
     def __init__(self, input_dim: int, output_dim: int):
         super(AnalyzedLinear, self).__init__()
         self.layer = nn.Linear(input_dim, output_dim)
