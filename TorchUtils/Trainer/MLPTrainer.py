@@ -14,6 +14,7 @@ from ._KeyboardInterruptHandler import respond_exeption
 from ._ModelSaver import save_model
 from ._Printer import print_result, show_progressbar, summarize_trainer
 from ._TrainerInterface import TrainerBase
+from ._ECallbackEvent import ECallbackEvent
 
 warnings.simplefilter("ignore")
 colorama.init()
@@ -47,7 +48,7 @@ class MLPClassificationTrainer(TrainerBase):
         >>> optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
         >>> trainer = MLPClassificationTrainer(model, criterion, optimizer)
         >>> trainer.fit(train_loader, epochs=10, validation_loader=validation_loader)
-        >>> trainer.plot_result()
+        >>> trainer.plot()
         >>> trainer.save()
     """
 
@@ -73,6 +74,7 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
         summarize_trainer(self.model, self.criterion, self.optimizer)
+        self.callback = {}
 
     def reset_history(self):
         """ reset_history"""
@@ -120,7 +122,7 @@ class MLPClassificationTrainer(TrainerBase):
                 for i, (inputs, labels) in enumerate(train_loader, 1):
                     show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i, whole_time=time.time()-st)
 
-                    if type(reshape_size) == tuple:
+                    if not reshape_size is None:
                         inputs = inputs.view(*reshape_size)
 
                     inputs, labels = convert_device(inputs, labels)
@@ -129,7 +131,6 @@ class MLPClassificationTrainer(TrainerBase):
                     loss = self.criterion(outputs, labels)
                     loss.backward()
                     self.optimizer.step()
-
                     train_acc += calculate_accuracy(outputs, labels)
                     train_loss += loss.item()
 
@@ -149,7 +150,7 @@ class MLPClassificationTrainer(TrainerBase):
                         for i, (inputs, labels) in enumerate(validation_loader, 1):
                             show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
 
-                            if type(reshape_size) == tuple:
+                                if not reshape_size is None:
                                 inputs = inputs.view(*reshape_size)
 
                             inputs, labels = convert_device(inputs, labels)
@@ -251,8 +252,7 @@ class MLPClassificationTrainer(TrainerBase):
         """
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
 
-    def plot_result(self):
-        """ plot_result"""
+    def plot(self):
         plt.subplot(1, 2, 1)
         plt.plot(self.train_acc_history, label="train", color="r")
         if not self.val_acc_history == []:
@@ -269,6 +269,30 @@ class MLPClassificationTrainer(TrainerBase):
         plt.ylabel("Loss")
         plt.legend()
         plt.show()
+
+    def set_callback(self, event: ECallbackEvent, *args, **kwargs):
+        """ set callback
+
+        Arguments:
+        ----------
+            event {ECallbackEvent} -- event type
+
+        Keyword Arguments:
+        ------------------
+            iteration_base {int} -- the number of steps for calling callback function (default: -1)
+                                    when iteration_base is -1, the callback function will be called every iteration.
+            accuracy_base {float} --
+
+        Examples:
+        ---------
+            >>>
+        """
+        if event == ECallbackEvent.ITERATION:
+            self.callback[event] = {"iteration_base": kwargs.get("iteration_base", -1)}
+        elif event == ECallbackEvent.ACCURACY:
+            self.callback[event] = {"accuracy_base": kwargs.get("accuracy_base", -1)}
+        elif event == ECallbackEvent.LOSS:
+            self.callback[event] = {"loss_diff_threshold": kwargs.get("loss_diff_threshold", -1)}
 
 
 # プログレスバーなど未実装
