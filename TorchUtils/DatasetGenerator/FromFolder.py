@@ -1,16 +1,13 @@
 from PIL import Image
 from glob import glob
-import PIL
 import torch
 import numpy as np
 import os
 import random
 from torchvision.datasets import ImageFolder
-from torchvision import transforms
-from torchvision.transforms import Compose
+import torchvision.transforms as transforms
 from ._LoaderGenerator import generate_dataloader as gd
 from ._SplitDataset import split_dataset
-from typing import Tuple, Any
 
 
 # TODO 複数ラベルバージョン(CSVで管理)も作る
@@ -29,8 +26,7 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
         >>> datasetB = SingleFolderSingleLabelDataset("B")
     """
 
-    def __init__(self, dir_name: str, transform: Compose = Compose([transforms.ToTensor()]),
-                 label: str = None, ext: str = "jpg", shuffle: bool = True):
+    def __init__(self, dir_name, transform=None, label=None, ext="jpg", shuffle=True):
         """
         Arguments:
         ----------
@@ -57,6 +53,9 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
         else:
             self.LABEL = label
 
+        if transform is None:
+            transform = transforms.Compose([transforms.ToTensor()])
+
         self.transform = transform
         files = os.listdir(os.path.abspath(dir_name))
         self.files = [os.path.join(os.path.abspath(dir_name), f) for f in files if f.split(".")[-1] == ext]
@@ -65,16 +64,16 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
         if shuffle:
             random.shuffle(self.files)
 
-    def __len__(self) -> int:
+    def __len__(self):
         return self.length
 
-    def __getitem__(self, i) -> Tuple[Any, str]:
+    def __getitem__(self, i):
         img = Image.open(self.files[i])
         img = self.transform(img)
         return img, self.LABEL
 
 
-def generate_dataset(folder_path: str, transform: Compose):
+def generate_dataset(folder_path, transform):
     """ generate dataset from folder
 
     Arguments:
@@ -94,9 +93,7 @@ def generate_dataset(folder_path: str, transform: Compose):
     return ImageFolder(folder_path, transform)
 
 
-def generate_dataloader(folder_path: str, transform: Compose = None, batch_size: int = 128,
-                        shuffle: bool = True, num_workers: int = 2, is_single_label: bool = False,
-                        ext: str = "jpg", label: int = 0):
+def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, is_single_label=False, ext="jpg", label=0):
     """ generate dataloader from folder
 
     Arguments:
@@ -127,8 +124,7 @@ def generate_dataloader(folder_path: str, transform: Compose = None, batch_size:
     return gd(dataset, batch_size, shuffle, num_workers)
 
 
-def generate_dataloader_with_val(folder_path: str, transform: Compose = None, batch_size: int = 128,
-                                 shuffle: bool = True, num_workers: int = 2, validation_rate: float = 0.2):
+def generate_dataloader_with_val(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
     """ generate dataloder from folder with validation
 
     Arguments:

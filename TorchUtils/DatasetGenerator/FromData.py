@@ -1,5 +1,4 @@
 import torch
-from torchvision.transforms import Compose
 from ._LoaderGenerator import generate_dataloader
 
 
@@ -22,8 +21,6 @@ class UserDataDataset(torch.utils.data.Dataset):
         return self.X[i], self.y[i]
 
 
-def generate_dataset_for_userdata(X: torch.Tensor, y: torch.Tensor, batch_size: int,
-                                  shuffle: bool = True, num_workers: int = 2,
-                                  transform: Compose = Compose([])):
+def generate_dataset_for_userdata(X, y, batch_size, shuffle=True, num_workers=2, transform=None):
     dataset = UserDataDataset(X, y, transform)
     return generate_dataloader(dataset, batch_size, shuffle, num_workers)

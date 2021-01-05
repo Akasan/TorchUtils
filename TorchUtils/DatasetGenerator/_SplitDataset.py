@@ -1,9 +1,7 @@
 import torch
-from typing import Tuple
 
 
-def split_dataset(dataset: torch.utils.data.Dataset,
-                  validation_rate: float) ->Tuple[torch.utils.data.Dataset]:
+def split_dataset(dataset, validation_rate):
     """ split_dataset to training dataset and validation dataset
 
     Arguments:

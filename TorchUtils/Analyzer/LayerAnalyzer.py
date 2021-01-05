@@ -9,13 +9,14 @@ warnings.simplefilter("ignore")
 
 
 class AnalyzedLinear(nn.Module):
+
     def __init__(self, input_dim: int, output_dim: int):
         super(AnalyzedLinear, self).__init__()
         self.layer = nn.Linear(input_dim, output_dim)
         self.INPUT_DIM = input_dim
         self.OUTPUT_DIM = output_dim
         self.outputs: Dict[int, torch.Tensor] = None
-        self.distribution: Dict[int, Dict[str, float]] = dict()
+        self.distribution = {i: {} for i in range(output_dim)}
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         outputs = self.layer(x)
@@ -24,10 +25,11 @@ class AnalyzedLinear(nn.Module):
         return self.layer(x)
 
     def _calculate_distribution(self) -> None:
-        self.distribution = {i: {"mean": out.mean().item(), "std": out.std().item()}
-                             for i, out in self.outputs.items()}
+        for i in range(self.OUTPUT_DIM):
+            self.distribution[i]["mean"] = self.outputs[i].mean().item()
+            self.distribution[i]["std"] = self.outputs[i].std().item()
 
-    def plot_dist(self) -> None:
+    def plot_dist(self):
         """ plot_dist"""
         for i in range(self.OUTPUT_DIM):
             plt.subplot(1, self.OUTPUT_DIM, i+1)

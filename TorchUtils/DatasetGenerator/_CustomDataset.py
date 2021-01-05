@@ -1,21 +1,18 @@
 import torch
-import torchvision
 import warnings
-from typing import Tuple
-import numpy as np
 warnings.simplefilter("ignore")
 
 
 class CustomDataset(torch.utils.data.Dataset):
-    def __init__(self, data: torch.Tensor, labels: torch.Tensor, transform: torchvision.transforms.transforms = None):
+    def __init__(self, data, labels, transform=None):
         self.transform = transform
         self.data = data.detach().numpy()
         self.labels = labels.detach().numpy()
 
-    def __len__(self) -> int:
+    def __len__(self):
         return self.data.shape[0]
 
-    def __getitem__(self, idx) -> Tuple[np.ndarray, int]:
+    def __getitem__(self, idx):
         data = self.data[idx]
         label = self.labels[idx]
 
@@ -24,5 +21,5 @@ class CustomDataset(torch.utils.data.Dataset):
 
         return data, label
 
-    def size(self) -> tuple:
+    def size(self):
         return self.data.size()

@@ -1,22 +1,20 @@
-import torchvision
 import torchvision.transforms as transforms
 from copy import deepcopy
-from typing import Any, Tuple, Union, List, Sequence, Optional
-
-__DEFAULT_TRANSFORM = transforms.Compose([])
 
 
 class DataAugmentationGenerator:
-    def __init__(self, transform: transforms.Compose = __DEFAULT_TRANSFORM):
-        self.transform = transform
+    def __init__(self, transform=None):
+        self.transform = transforms.Compose([]) if transform is None else transform
 
     def print_summary(self):
         print(self.transform)
 
-    def get_transform(self) -> torchvision.transforms.Compose:
-        return self.transform
+    def get_transform(self):
+        transform_cp = DataAugmentationGenerator(deepcopy(self.transform))
+        transform_cp.add_tensor()
+        return transform_cp.transform
 
-    def delete(self, idx: int):
+    def delete(self, idx):
         """ delete
 
         Arguments:
@@ -25,18 +23,16 @@ class DataAugmentationGenerator:
         """
         del self.transform.transforms[idx]
 
-    def _append(self, transform: Any, is_random_apply: bool = False,
-                random_apply_rate: float = 0.5):
+    def add_tensor(self):
+        self._append(transforms.ToTensor())
+
+    def _append(self, transform, is_random_apply=False, random_apply_rate=0.5):
         if is_random_apply:
             self.transform.transforms.append(transforms.RandomApply([transform], p=random_apply_rate))
         else:
             self.transform.transforms.append(transform)
 
-    def add_tensor(self):
-        self._append(transforms.ToTensor())
-
-    def add_resize(self, new_size: int, interpolation: int = 2,
-                   is_random_apply: bool = False, random_apply_rate: float = 0.5):
+    def add_resize(self, new_size, interpolation=2, is_random_apply=False, random_apply_rate=0.5):
         """ add_resize
 
         Arguments:
@@ -45,8 +41,7 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.Resize(new_size, interpolation), is_random_apply, random_apply_rate)
 
-    def add_center_crop(self, crop_size: int, is_random_apply: bool = False,
-                        random_apply_rate: float = 0.5):
+    def add_center_crop(self, crop_size, is_random_apply=False, random_apply_rate=0.5):
         """ add_center_crop
 
         Arguments:
@@ -55,31 +50,24 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.CenterCrop(crop_size), is_random_apply, random_apply_rate)
 
-    def add_color_jitter(self, brightness: float = 0, contrast: Union[float, Tuple[float]] = 0,
-                         saturation: Union[float, Tuple[float]] = 0, hue: Union[float, Tuple[float]] = 0,
-                         is_random_apply: bool = False, random_apply_rate: float = 0.5, **kwargs):
+    def add_color_jitter(self, brightness=0, contrast=0, saturation=0, hue=0, is_random_apply=False,
+                         random_apply_rate=0.5, **kwargs):
         self._append(transforms.ColorJitter(brightness=brightness, contrast=contrast, saturation=saturation, hue=hue, **kwargs),
                      is_random_apply, random_apply_rate)
 
-    def add_pad(self, padding: Union[int, Tuple[int]], fill: Union[int, Tuple[int]] = 0,
-                padding_mode: str = "constant", is_random_apply: bool = False,
-                random_apply_rate: float = 0.5):
+    def add_pad(self, padding, fill=0, padding_mode="constant", is_random_apply=False, random_apply_rate=0.5):
         self._append(transforms.Pad(padding, fill=fill, padding_mode=padding_mode),
                      is_random_apply, random_apply_rate)
 
-    def add_random_affine(self, degree: Union[int, float, Sequence], translate: Union[Tuple, Optional[Any]] = None,
-                          scale: Union[Tuple, Optional[Any]] = None, resample: Any = False,
-                          shear: Union[Sequence, float, int, Optional[Any]]=None, fillcolor: int = 0,
-                          is_random_apply: bool = False, random_apply_rate: float = 0.5):
+    def add_random_affine(self, degree, translate=None, scale=None, shear=None, resample=False, fillcolor=0,
+                          is_random_apply=False, random_apply_rate=0.5):
         self._append(transforms.RandomAffine(degree, translate, scale, shear, resample),
                      is_random_apply, random_apply_rate)
 
-    def add_random_grayscale(self, p: float, is_random_apply: bool = False,
-                             random_apply_rate:float = 0.5):
+    def add_random_grayscale(self, p, is_random_apply=False, random_apply_rate=0.5):
         self._append(transforms.RandomGrayscale(p), is_random_apply, random_apply_rate)
 
-    def add_random_crop(self, crop_size: Union[Sequence, int], is_random_apply: bool = False,
-                        random_apply_rate=0.5):
+    def add_random_crop(self, crop_size, is_random_apply=False, random_apply_rate=0.5):
         """ add_random_crop
 
         Arguments:
@@ -88,8 +76,7 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.RandomCrop(crop_size), is_random_apply, random_apply_rate)
 
-    def add_random_horizontal_flip(self, p: float = 0.5, is_random_apply: bool = False,
-                                   random_apply_rate: float = 0.5):
+    def add_random_horizontal_flip(self, p=0.5, is_random_apply=False, random_apply_rate=0.5):
         """ add_random_horizontal_flip
 
         Keyword Arguments:
@@ -98,8 +85,7 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.RandomHorizontalFlip(p), is_random_apply, random_apply_rate)
 
-    def add_random_vertical_flip(self, p: float = 0.5, is_random_apply: bool = False,
-                                 random_apply_rate: float = 0.5):
+    def add_random_vertical_flip(self, p=0.5, is_random_apply=False, random_apply_rate=0.5):
         """ add_random_vertical_flip
 
         Keyword Arguments:
@@ -108,8 +94,7 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.RandomVerticalFlip(p), is_random_apply, random_apply_rate)
 
-    def add_random_rotation(self, degree: Union[Sequence, float, int], is_random_apply: bool = False,
-                            random_apply_rate: float = 0.5):
+    def add_random_rotation(self, degree, is_random_apply=False, random_apply_rate=0.5):
         """ add_random_rotation
 
         Arguments:
@@ -118,8 +103,8 @@ class DataAugmentationGenerator:
         """
         self._append(transforms.RandomRotation(degrees=degree), is_random_apply, random_apply_rate)
 
-    def add_random_erasing(self, p: float = 0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0,
-                           is_random_apply: bool = False, random_apply_rate: float = 0.5):
+    def add_random_erasing(self, p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0,
+                           is_random_apply=False, random_apply_rate=0.5):
         """ add_random_erasing
 
         Keyword Arguments:
@@ -132,12 +117,10 @@ class DataAugmentationGenerator:
         self._append(transforms.RandomErasing(p=p, scale=scale, ratio=ratio, value=value),
                      is_random_apply, random_apply_rate)
 
-    def add_linear_transformation(self, transformation_matrix, mean_vector,
-                                  is_random_apply: bool = False, random_apply_rate: float = 0.5):
+    def add_linear_transformation(self, transformation_matrix, mean_vector, is_random_apply=False, random_apply_rate=0.5):
         self._append(transforms.LinearTransformation(transformation_matrix, mean_vector), is_random_apply, random_apply_rate)
 
-    def add_normalize(self, mean: Union[Tuple[float], float], std: Union[Tuple[float], float],
-                      is_random_apply: bool = False, random_apply_rate: float = 0.5):
-        mean = mean if isinstance(mean, tuple) else tuple([mean])
-        std = std if isinstance(std, tuple) else tuple([std])
+    def add_normalize(self, mean, std, is_random_apply=False, random_apply_rate=0.5):
+        mean = mean if type(mean) in (list, tuple) else tuple([mean])
+        std = std if type(std) in (list, tuple) else tuple([std])
         self._append(transforms.Normalize(mean, std), is_random_apply, random_apply_rate)

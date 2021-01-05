@@ -1,24 +1,20 @@
-from typing import Any
 import torch
 import torch.nn as nn
-from typing import Any, Dict
 
 
-def is_tensor(x: Any) -> bool:
+__TORCH_TENSOR_TYPE = type(torch.tensor([1]))
+
+
+def is_tensor(x):
     """ check whether specified value x is torch.tesnsor or not
 
     Arguments:
-    ----------
-        x {Any} -- value you want to check the type
-
-    Returns:
-    --------
-        {bool} -- True when input value is torch.Tensor
+        x {any} -- value you want to check the type
     """
-    return type(x) == torch.Tensor
+    return True if type(x) == __TORCH_TENSOR_TYPE else False
 
 
-__TYPE: Dict[Any, str] = {
+__TYPE = {
     nn.Linear: "linear",
 
     nn.Conv1d: "conv",
@@ -38,15 +34,13 @@ __TYPE: Dict[Any, str] = {
     nn.Dropout: "dropout",
 }
 
-def get_type(layer: Any, as_string: bool = True) -> str:
+def get_type(layer, as_string=True):
     """ get type of layer
 
     Arguments:
-    ----------
         layer {torch.nn.modules.*} -- torch layer
 
     Returns:
-    --------
         {str} -- layer type as character
     """
     try:
