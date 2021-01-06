@@ -151,7 +151,7 @@ class MLPClassificationTrainer(TrainerBase):
                             show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
 
                                 if not reshape_size is None:
-                                inputs = inputs.view(*reshape_size)
+                                    inputs = inputs.view(*reshape_size)
 
                             inputs, labels = convert_device(inputs, labels)
                             outputs = self.model(inputs)
