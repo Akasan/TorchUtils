@@ -1,7 +1,8 @@
 import torch
 
 
-def save_model(model, filename="model.pth", is_parameter_only=True):
+def save_model(model: torch.nn.Module, filename: str = "model.pth",
+               is_parameter_only: bool = False):
     """ save_model
 
     Arguments:

@@ -2,10 +2,13 @@
 
 from ..Core.EnvironmentChecker import get_device_type
 from torch.optim.lr_scheduler import _LRScheduler
+from typing import Any
+import torch
 
 
 class LinearLRScheduler(_LRScheduler):
-    def __init__(self, optimizer, end_lr, num_iter, last_epoch=-1):
+    def __init__(self, optimizer: Any, end_lr: float, num_iter: int,
+                 last_epoch: int = -1):
         self.end_lr = end_lr
         self.num_iter = num_iter
         super(LinearLRScheduler, self).__init__(optimizer, last_epoch)
@@ -15,12 +18,10 @@ class LinearLRScheduler(_LRScheduler):
 
 
 class LRRangeTester:
-    def __init__(self, model, optimizer, criterion, device=None):
+    def __init__(self, model: torch.nn.Module, optimizer: torch.optim,
+                 criterion: Any, device: str = None):
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
         self.device = get_device_type() if device is None else device
         self.model.to(self.device)
-
-    def execute_range_test(self, train_loader, start_lr=1e-7, end_lr=1e2, num_iter=100):
-        self.loss_history = {"lr": [], "loss": []}

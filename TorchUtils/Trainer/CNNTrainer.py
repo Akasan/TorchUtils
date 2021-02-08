@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from colorama import Fore
+from typing import Any, Tuple
 
 from ..Core.EnvironmentChecker import convert_device, get_device_type
 from ._KeyboardInterruptHandler import respond_exeption
@@ -23,7 +24,8 @@ def calculate_accuracy(outputs, labels):
 
 
 class CNNClassificationTrainer(TrainerBase):
-    def __init__(self, model, criterion, optimizer, device=None):
+    def __init__(self, model: torch.nn.Module, criterion: Any, optimizer: Any,
+                 device: str = None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -40,7 +42,9 @@ class CNNClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
 
-    def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
+    def fit(self, train_loader: torch.utils.data.DataLoader, epochs: int,
+            reshape_size: Tuple[int] = None, verbose_rate: int = 1,
+            validation_loader: torch.utils.data.DataLoader=None):
         print(Fore.RED + "<<< START TRAINING MODEL >>>" + Fore.WHITE)
         self.reset_history()
 
@@ -101,7 +105,8 @@ class CNNClassificationTrainer(TrainerBase):
         except KeyboardInterrupt:
             respond_exeption(self.model)
 
-    def predict(self, test_loader, reshape_size=None, to_numpy=False):
+    def predict(self, test_loader: torch.utils.data.DataLoader,
+                reshape_size: Tuple[int] = None, to_numpy: bool = False):
         total_outputs = None
         total_labels = None
 
@@ -111,7 +116,6 @@ class CNNClassificationTrainer(TrainerBase):
 
             images = images.to(self.device)
             outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
 
             if total_outputs is None:
                 total_outputs = outputs
@@ -125,7 +129,7 @@ class CNNClassificationTrainer(TrainerBase):
         else:
             return total_outputs, total_labels
 
-    def evaluate(self, test_loader):
+    def evaluate(self, test_loader: torch.utils.data.DataLoader):
         acc = 0.0
         loss = 0.0
 
@@ -141,14 +145,13 @@ class CNNClassificationTrainer(TrainerBase):
 
             print(f"Evaluation Accuracy: {acc: .6f}")
 
-    def save(self, model_path="model.pth", is_parameter_only=True):
+    def save(self, model_path: str = "model.pth", is_parameter_only: bool = True):
         save_model(self.model, model_path, is_parameter_only)
 
-    def read(self, model_path="model.pth"):
+    def read(self, model_path: str = "model.pth"):
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
 
     def plot_result(self):
-        # Accuracy
         plt.subplot(1, 2, 1)
         plt.plot(self.train_acc_history, label="train", color="r")
         plt.plot(self.val_acc_history, label="val", color="b")

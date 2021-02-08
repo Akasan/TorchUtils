@@ -1,3 +1,5 @@
+import numpy as np
+from typing import Any, Tuple, Union
 import sys
 import time
 import warnings
@@ -51,7 +53,8 @@ class MLPClassificationTrainer(TrainerBase):
         >>> trainer.save()
     """
 
-    def __init__(self, model, criterion, optimizer, device=None):
+    def __init__(self, model: nn.Module, criterion: Any, optimizer: nn.optim,
+                 device: str = None):
         """ __init__
 
         Arguments:
@@ -81,7 +84,9 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
 
-    def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
+    def fit(self, train_loader: torch.utils.data.DataLoader, epochs: int,
+            reshape_size: Tuple[int] = None, verbose_rate: int = 1,
+            validation_loader: torch.utils.data.DataLoader = None):
         """ train model
 
         Arguments:
@@ -169,7 +174,8 @@ class MLPClassificationTrainer(TrainerBase):
         except KeyboardInterrupt:
             respond_exeption(self.model)
 
-    def predict(self, test_loader, reshape_size=None, to_numpy=False):
+    def predict(self, test_loader: torch.utils.data.DataLoader, reshape_size: Tuple[int] = None,
+                to_numpy: bool = False) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """ predict
 
         Arguments:
@@ -210,7 +216,7 @@ class MLPClassificationTrainer(TrainerBase):
         else:
             return total_outputs, total_labels
 
-    def evaluate(self, test_loader):
+    def evaluate(self, test_loader: torch.utils.data.DataLoader):
         """ evaluate
 
         Arguments:
@@ -233,7 +239,7 @@ class MLPClassificationTrainer(TrainerBase):
             acc /= len(test_loader.dataset)
             print(f"Evaluation Accuracy: {acc: .6f}")
 
-    def save(self, model_path="model.pth", is_parameter_only=True):
+    def save(self, model_path: str = "model.pth", is_parameter_only: bool = True):
         """ save
 
         Keyword Arguments:
@@ -242,7 +248,7 @@ class MLPClassificationTrainer(TrainerBase):
         """
         save_model(self.model, model_path, is_parameter_only)
 
-    def read(self, model_path="model.pth"):
+    def read(self, model_path: str = "model.pth"):
         """ read
 
         Keyword Arguments:
