@@ -27,5 +27,9 @@ class TrainerBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def plot_result(self):
+    def plot(self):
+        pass
+
+    @abstractmethod
+    def set_callback(self):
         pass
