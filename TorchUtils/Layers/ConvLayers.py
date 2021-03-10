@@ -4,7 +4,7 @@ from torch import nn
 
 class FireModule(nn.Module):
     def __init__(self, input_channels, squeeze_channels, expand_channels):
-        """ __init__
+        """__init__
 
         Arguments:
         ----------
@@ -16,19 +16,21 @@ class FireModule(nn.Module):
         # INPUT
         self.squeeze = nn.Sequential(
             nn.Conv2d(input_channels, squeeze_channels, kernel_size=1, stride=1),
-            nn.ReLU(True)
+            nn.ReLU(True),
         )
 
         # 1X1 expand block
         self.expand1 = nn.Sequential(
             nn.Conv2d(squeeze_channels, expand_channels, kernel_size=1, stride=1),
-            nn.ReLU(True)
+            nn.ReLU(True),
         )
 
         # 3X3 expand block
         self.expand3 = nn.Sequential(
-            nn.Conv2d(squeeze_channels, expand_channels, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True)
+            nn.Conv2d(
+                squeeze_channels, expand_channels, kernel_size=3, stride=1, padding=1
+            ),
+            nn.ReLU(True),
         )
 
     def forward(self, x):

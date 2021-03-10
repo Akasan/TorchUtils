@@ -1,11 +1,12 @@
 import torch
 import torchvision
 import warnings
+
 warnings.simplefilter("ignore")
 
 
 def generate_dataloader(dataset, batch_size, shuffle, num_workers):
-    """ generate_dataloader
+    """generate_dataloader
 
     Arguments:
     ----------
@@ -18,7 +19,6 @@ def generate_dataloader(dataset, batch_size, shuffle, num_workers):
     --------
         {torch.utils.data.DataLoader} -- data loader
     """
-    return torch.utils.data.DataLoader(dataset,
-                                       batch_size=batch_size,
-                                       shuffle=shuffle,
-                                       num_workers=num_workers)
+    return torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers
+    )

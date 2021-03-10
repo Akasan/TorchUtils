@@ -1,10 +1,10 @@
 import torch
 import sys
 import colorama
+
 colorama.init()
 from colorama import Fore
 from ._ModelSaver import save_model
-
 
 
 def respond_exeption(model: torch.nn.Module):

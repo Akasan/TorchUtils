@@ -16,8 +16,8 @@ class MLP(nn.Module):
         if not activations[0] is None:
             modules.append(ACTIVATION[activations[0]])
 
-        for i in range(1, len(neurons)-1):
-            modules.append(nn.Linear(neurons[i], neurons[i+1]))
+        for i in range(1, len(neurons) - 1):
+            modules.append(nn.Linear(neurons[i], neurons[i + 1]))
             if not activations[i] is None:
                 modules.append(ACTIVATION[activations[i]])
 

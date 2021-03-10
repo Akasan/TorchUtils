@@ -12,7 +12,7 @@ from ._SplitDataset import split_dataset
 
 # TODO 複数ラベルバージョン(CSVで管理)も作る
 class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
-    """ You can make dataset for one specified folder
+    """You can make dataset for one specified folder
 
     Examples:
     ---------
@@ -58,7 +58,11 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
 
         self.transform = transform
         files = os.listdir(os.path.abspath(dir_name))
-        self.files = [os.path.join(os.path.abspath(dir_name), f) for f in files if f.split(".")[-1] == ext]
+        self.files = [
+            os.path.join(os.path.abspath(dir_name), f)
+            for f in files
+            if f.split(".")[-1] == ext
+        ]
         self.length = len(self.files)
 
         if shuffle:
@@ -74,7 +78,7 @@ class SingleFolderSingleLabelDataset(torch.utils.data.Dataset):
 
 
 def generate_dataset(folder_path, transform):
-    """ generate dataset from folder
+    """generate dataset from folder
 
     Arguments:
     ----------
@@ -93,8 +97,17 @@ def generate_dataset(folder_path, transform):
     return ImageFolder(folder_path, transform)
 
 
-def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, is_single_label=False, ext="jpg", label=0):
-    """ generate dataloader from folder
+def generate_dataloader(
+    folder_path,
+    transform=None,
+    batch_size=128,
+    shuffle=True,
+    num_workers=2,
+    is_single_label=False,
+    ext="jpg",
+    label=0,
+):
+    """generate dataloader from folder
 
     Arguments:
     ----------
@@ -117,15 +130,24 @@ def generate_dataloader(folder_path, transform=None, batch_size=128, shuffle=Tru
         >>> dataloader = generate_dataloader("root")
     """
     if is_single_label:
-        dataset = SingleFolderSingleLabelDataset(folder_path, transform, label, ext, shuffle)
+        dataset = SingleFolderSingleLabelDataset(
+            folder_path, transform, label, ext, shuffle
+        )
     else:
         dataset = generate_dataset(folder_path, transform)
 
     return gd(dataset, batch_size, shuffle, num_workers)
 
 
-def generate_dataloader_with_val(folder_path, transform=None, batch_size=128, shuffle=True, num_workers=2, validation_rate=0.2):
-    """ generate dataloder from folder with validation
+def generate_dataloader_with_val(
+    folder_path,
+    transform=None,
+    batch_size=128,
+    shuffle=True,
+    num_workers=2,
+    validation_rate=0.2,
+):
+    """generate dataloder from folder with validation
 
     Arguments:
     ----------

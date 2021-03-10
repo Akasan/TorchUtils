@@ -29,7 +29,7 @@ class Visualizer:
             self.__layer[layer[0]] = {"type": layer_type, "detail": layer[1]}
 
     def describe_layers(self, layer_name=None):
-        """ describe each layer's information
+        """describe each layer's information
 
         Arguments:
             layer_name {str} -- if you want to describe speficy layer, set this as the layer name
@@ -46,13 +46,8 @@ class Visualizer:
             print(f"Layer name: {layer_name}")
             print(f"    detail: {self.__layer[layer_name]['detail']}")
 
-    def describe_kernel(self,
-                        layer_name=None,
-                        row=1,
-                        column=1,
-                        idx=[],
-                        is_all=False):
-        """ describe conv layer's kernel
+    def describe_kernel(self, layer_name=None, row=1, column=1, idx=[], is_all=False):
+        """describe conv layer's kernel
 
         Keyword Arguments:
             layer_name {str} -- layer name (default: None)
@@ -63,7 +58,7 @@ class Visualizer:
             is_all {bool} -- if you want to describe all kernrel, set this as True
         """
         if layer_name == None:
-            pprint(self.__layer)        # TODO convだけ表示
+            pprint(self.__layer)  # TODO convだけ表示
             layer_name = input("Layer name >>> ")
 
         if not layer_name in self.__layer:
@@ -72,9 +67,8 @@ class Visualizer:
         kernel = self.__layer[layer_name]["detail"].weight
         self._generate_heatmap(kernel, row, column, idx, is_all)
 
-
     def generate_output(self, layer_name, inputs, is_show=False):
-        """ generate outpu with specify layer
+        """generate outpu with specify layer
 
         Arguments:
             layer_name {str} -- layer name you want to generate output
@@ -91,12 +85,16 @@ class Visualizer:
             [type] -- [description]
         """
         if not layer_name in self.__layer.keys():
-            raise NotExistLayerNameError(f"You specify not existed layer name: {layer_name}")
+            raise NotExistLayerNameError(
+                f"You specify not existed layer name: {layer_name}"
+            )
 
         if not is_tensor(inputs):
             raise NotTensorError("You specify not torch.tensor")
 
-        self._generate_output_image(inputs, self.__layer[layer_name]["detail"].weight[0])
+        self._generate_output_image(
+            inputs, self.__layer[layer_name]["detail"].weight[0]
+        )
         outputs_orig = self.__layer[layer_name]["detail"](inputs)
 
         if is_show:
@@ -106,14 +104,8 @@ class Visualizer:
 
         return outputs_orig
 
-    def _generate_heatmap(self,
-                          kernel,
-                          row,
-                          column,
-                          idx,
-                          is_all,
-                          is_gray=True):
-        """ generate heatmap
+    def _generate_heatmap(self, kernel, row, column, idx, is_all, is_gray=True):
+        """generate heatmap
 
         Arguments:
             kernel {torch.tensor} -- kernel of convolution layer
@@ -125,17 +117,18 @@ class Visualizer:
         Keyword Arguments:
             is_gray {bool} -- whether generate heatmap as gray scale (default: True)
         """
-        fix, ax = plt.subplots(nrows=row, ncols=column,
-                               figsize=(kernel.shape[2], kernel.shape[3]))
+        fix, ax = plt.subplots(
+            nrows=row, ncols=column, figsize=(kernel.shape[2], kernel.shape[3])
+        )
 
-        kernel = kernel[:row*column, 0, :, :].detach().numpy()
+        kernel = kernel[: row * column, 0, :, :].detach().numpy()
         kernel_list = [k.tolist() for k in kernel]
 
         for i, k in enumerate(kernel_list):
             if is_gray:
-                sns.heatmap(k, ax=ax[i//row, i%column], cmap="gray")
+                sns.heatmap(k, ax=ax[i // row, i % column], cmap="gray")
             else:
-                sns.heatmap(k, ax=ax[i//row, i%column])
+                sns.heatmap(k, ax=ax[i // row, i % column])
 
         plt.show()
 

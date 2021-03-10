@@ -12,11 +12,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 import warnings
+
 warnings.simplefilter("ignore")
 
 
 def _get_standard_scaler(data: np.ndarray) -> StandardScaler:
-    """ _get_standard_scaler
+    """_get_standard_scaler
 
     Arguments:
     ----------
@@ -62,7 +63,9 @@ class PCAAnalyzer:
         outputs = self.pca.transform(inputs)
         plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
         for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
+            plt.scatter(
+                self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5
+            )
 
         plt.colorbar()
         plt.show()
@@ -72,7 +75,7 @@ class PCAAnalyzer:
         self.stats = {k: {} for k in unique_labels}
 
         for k in unique_labels:
-            idx = labels[labels==k]
+            idx = labels[labels == k]
             transformed = self.pca.transform(inputs[idx])
             self.stats[k]["center_x"] = transformed[:, 0].mean()
             self.stats[k]["center_y"] = transformed[:, 1].mean()
@@ -103,7 +106,9 @@ class TruncatedSVDAnalyzer:
         outputs = self.svd.transform(inputs)
         plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
         for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
+            plt.scatter(
+                self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5
+            )
 
         plt.colorbar()
         plt.show()
@@ -113,7 +118,7 @@ class TruncatedSVDAnalyzer:
         self.stats = {k: {} for k in unique_labels}
 
         for k in unique_labels:
-            idx = labels[labels==k]
+            idx = labels[labels == k]
             transformed = self.pca.transform(inputs[idx])
             self.stats[k]["center_x"] = transformed[:, 0].mean()
             self.stats[k]["center_y"] = transformed[:, 1].mean()
@@ -140,7 +145,9 @@ class LDAAnalyzer:
         outputs = self.lda.transform(self.scaler.transform(inputs))
         plt.scatter(outputs[:, 0], outputs[:, 1], c=labels)
         for k in self.stats:
-            plt.scatter(self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5)
+            plt.scatter(
+                self.stats[k]["center_x"], self.stats[k]["center_y"], color="red", s=5
+            )
 
         plt.colorbar()
         plt.show()
@@ -156,7 +163,7 @@ class SVCAnalyzer:
         self.scaler = None
 
     def fit(self, inputs: np.ndarray, labels: np.ndarray, is_normalize: bool = True):
-        """ fit
+        """fit
 
         Arguments:
         ----------
@@ -170,7 +177,7 @@ class SVCAnalyzer:
         self.svc.fit(inputs, labels)
 
     def predict(self, inputs: np.ndarray) -> np.ndarray:
-        """ predict
+        """predict
 
         Arguments:
         ----------
@@ -183,8 +190,10 @@ class SVCAnalyzer:
         inputs = inputs if self.scaler is None else self.scaler.transform(inputs)
         return self.svc.predict(inputs)
 
-    def evaluate(self, inputs: np.ndarray, labels: np.ndarray, metric: str = "accuracy") -> None:
-        """ evaluate
+    def evaluate(
+        self, inputs: np.ndarray, labels: np.ndarray, metric: str = "accuracy"
+    ) -> None:
+        """evaluate
 
         Arguments:
         ----------
@@ -200,5 +209,7 @@ class SVCAnalyzer:
         print(accuracy)
 
     def plot(self, data: np.ndarray, labels: np.ndarray) -> None:
-        plot_decision_regions(data, labels.reshape(-1), clf=self.svc, res=0.01, legend=2)
+        plot_decision_regions(
+            data, labels.reshape(-1), clf=self.svc, res=0.01, legend=2
+        )
         plt.show()

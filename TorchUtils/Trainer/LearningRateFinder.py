@@ -7,8 +7,9 @@ import torch
 
 
 class LinearLRScheduler(_LRScheduler):
-    def __init__(self, optimizer: Any, end_lr: float, num_iter: int,
-                 last_epoch: int = -1):
+    def __init__(
+        self, optimizer: Any, end_lr: float, num_iter: int, last_epoch: int = -1
+    ):
         self.end_lr = end_lr
         self.num_iter = num_iter
         super(LinearLRScheduler, self).__init__(optimizer, last_epoch)
@@ -18,8 +19,13 @@ class LinearLRScheduler(_LRScheduler):
 
 
 class LRRangeTester:
-    def __init__(self, model: torch.nn.Module, optimizer: torch.optim,
-                 criterion: Any, device: str = None):
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        optimizer: torch.optim,
+        criterion: Any,
+        device: str = None,
+    ):
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
