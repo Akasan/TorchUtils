@@ -2,13 +2,13 @@ from math import ceil, floor
 from pprint import pprint
 import torch
 import torch.nn as nn
-from typing import Tuple, List
+from typing import Tuple, List, Optional, Union
 
 from .TypeChecker import get_type
 from .Errors import *
 
 
-def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: bool = None,
+def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: Optional[bool] = None,
                 is_no_shape_check: bool = False, is_print: bool = True) -> None:
     """ check_shape
 
@@ -34,7 +34,7 @@ def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: bool = 
 
     for i, layer in enumerate(model.named_modules()):
         if i == 0:
-            if type(input_shape) == int:
+            if isinstance(input_shape, int):
                 _shape = "1d"
             else:
                 _shape = "2d"
@@ -98,7 +98,8 @@ def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: bool = 
         is_exact_output_shape = _is_exact_output_shape(output_shape, shape_history[i])
 
 
-def _is_available_shape(previous_output, current_input, previous_output_shape, current_input_shape):
+def _is_available_shape(previous_output: Tuple[int], current_input: Tuple[int],
+                        previous_output_shape: str, current_input_shape: str) -> bool:
     """ _is_available_shape
 
     Arguments:
@@ -113,19 +114,23 @@ def _is_available_shape(previous_output, current_input, previous_output_shape, c
         {bool} -- True when specified layers' relationship acccording to the in-out shape is correct
     """
     if previous_output_shape == "2d" and current_input_shape == "2d":
-        return True if previous_output[-1] == current_input else False
+        return previous_output[-1] == current_input
 
     elif previous_output_shape == "2d" and current_input_shape == "1d":
         previous_all_cell = previous_output[0] * previous_output[1] * previous_output[2]
-        return True if previous_all_cell == current_input else False
+        return previous_all_cell == current_input
 
     elif previous_output_shape == "1d" and current_input_shape == "1d":
-        return True if previous_output == current_input else False
+        return previous_output == current_input
 
     return False
 
 
-def _calculate_convolutional_output_shape(input_shape, output_chennels, kernel_size, padding=(0, 0), stride=(1, 1)):
+def _calculate_convolutional_output_shape(input_shape: Tuple[int],
+                                          output_chennels: int,
+                                          kernel_size: Union[int, Tuple[int]],
+                                          padding: Tuple[int] = (0, 0),
+                                          stride: Tuple[int] = (1, 1)) -> Tuple[int, int, int]:
     """ _calculate_convolutional_output_shape
 
     Arguments:
@@ -148,7 +153,9 @@ def _calculate_convolutional_output_shape(input_shape, output_chennels, kernel_s
     return (output_height, output_width, output_chennels)
 
 
-def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, dilation):
+def _calculate_pooling_output_shape(input_shape: Tuple[int], kernel_size: Union[int, Tuple[int]],
+                                    padding: Union[int, Tuple[int]], stride: Union[int, Tuple[int]],
+                                    dilation: Union[int, Tuple[int]]) -> Tuple[int, int, int]:
     """ _calculate_pooling_output_shape
 
     Arguments:
@@ -165,16 +172,16 @@ def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, d
     """
     to_list = lambda x: [x, x]
 
-    if type(kernel_size) == int:
+    if isinstance(kernel_size, int):
         kernel_size = [kernel_size, kernel_size]
 
-    if type(padding) == int:
+    if isinstance(padding, int):
         padding = [padding, padding]
 
-    if type(stride) == int:
+    if isinstance(stride, int):
         stride = [stride, stride]
 
-    if type(dilation) == int:
+    if isinstance(dilation, int):
         dilation = [dilation, dilation]
 
     output_height = floor((input_shape[0] + 2 * padding[0] - dilation[0] * (kernel_size[0] -1) - 1) / stride[0] + 1)
@@ -182,12 +189,12 @@ def _calculate_pooling_output_shape(input_shape, kernel_size, padding, stride, d
     return (output_height, output_width, input_shape[-1])
 
 
-def _calculate_upsample_shape(input_shape, scale_factor):
+def _calculate_upsample_shape(input_shape: Tuple[int], scale_factor: float) -> Tuple[int, int, int]:
     return (input_shape[0]*scale_factor, input_shape[1]*scale_factor, input_shape[-1])
 
 
-def _is_exact_output_shape(exact_shape, model_shape):
-    return True if exact_shape == model_shape["out"] else False
+def _is_exact_output_shape(exact_shape: Tuple[int], model_shape: Tuple[int]) -> bool:
+    return exact_shape == model_shape["out"]
 
 
 

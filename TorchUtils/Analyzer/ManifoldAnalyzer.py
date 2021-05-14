@@ -85,7 +85,6 @@ class PCAAnalyzer:
         return self.pca.transform(inputs)
 
 
-# 次元削減
 class TruncatedSVDAnalyzer:
     def __init__(self, *args, **kwargs):
         self.svd = TruncatedSVD(n_components=2, n_iter=7, random_state=42)
