@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from typing import Dict
 
 import warnings
+
 warnings.simplefilter("ignore")
 
 
 class AnalyzedLinear(nn.Module):
-
     def __init__(self, input_dim: int, output_dim: int):
         super(AnalyzedLinear, self).__init__()
         self.layer = nn.Linear(input_dim, output_dim)
@@ -31,7 +31,7 @@ class AnalyzedLinear(nn.Module):
     def plot_dist(self):
         """ plot_dist"""
         for i in range(self.OUTPUT_DIM):
-            plt.subplot(1, self.OUTPUT_DIM, i+1)
+            plt.subplot(1, self.OUTPUT_DIM, i + 1)
             sns.distplot(self.outputs[i].detach().numpy(), kde=True)
 
         plt.show()

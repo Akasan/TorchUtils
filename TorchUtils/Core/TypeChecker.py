@@ -6,7 +6,7 @@ __TORCH_TENSOR_TYPE = type(torch.tensor([1]))
 
 
 def is_tensor(x):
-    """ check whether specified value x is torch.tesnsor or not
+    """check whether specified value x is torch.tesnsor or not
 
     Arguments:
         x {any} -- value you want to check the type
@@ -16,26 +16,22 @@ def is_tensor(x):
 
 __TYPE = {
     nn.Linear: "linear",
-
     nn.Conv1d: "conv",
     nn.Conv2d: "conv",
     nn.Conv3d: "conv",
-
     nn.MaxPool1d: "mpool",
     nn.MaxPool2d: "mpool",
     nn.MaxPool3d: "mpool",
-
     nn.ConvTranspose2d: "upsample",
     nn.Upsample: "upsample",
-
     nn.BatchNorm1d: "batchnorm",
     nn.BatchNorm2d: "batchnorm",
-
     nn.Dropout: "dropout",
 }
 
+
 def get_type(layer, as_string=True):
-    """ get type of layer
+    """get type of layer
 
     Arguments:
         layer {torch.nn.modules.*} -- torch layer

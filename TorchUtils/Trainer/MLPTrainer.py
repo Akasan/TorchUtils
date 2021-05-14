@@ -1,12 +1,12 @@
-import sys
+import numpy as np
+from typing import Any, Tuple, Union
 import time
 import warnings
 
 import colorama
 import matplotlib.pyplot as plt
 import torch
-import torch.multiprocessing as mp
-import torch.nn as nn
+from torch import nn
 from colorama import Fore
 
 from ..Core.EnvironmentChecker import convert_device, get_device_type
@@ -25,7 +25,7 @@ def calculate_accuracy(outputs, labels):
 
 
 class MLPClassificationTrainer(TrainerBase):
-    """ MLPClassificationTrainer
+    """MLPClassificationTrainer
 
     Attributes:
     ----------
@@ -52,8 +52,10 @@ class MLPClassificationTrainer(TrainerBase):
         >>> trainer.save()
     """
 
-    def __init__(self, model, criterion, optimizer, device=None):
-        """ __init__
+    def __init__(
+        self, model: nn.Module, criterion: Any, optimizer: Any, device: str = None
+    ):
+        """__init__
 
         Arguments:
         ----------
@@ -83,8 +85,15 @@ class MLPClassificationTrainer(TrainerBase):
         self.val_loss_history = []
         self.val_acc_history = []
 
-    def fit(self, train_loader, epochs, reshape_size=None, verbose_rate=1, validation_loader=None):
-        """ train model
+    def fit(
+        self,
+        train_loader: torch.utils.data.DataLoader,
+        epochs: int,
+        reshape_size: Tuple[int] = None,
+        verbose_rate: int = 1,
+        validation_loader: torch.utils.data.DataLoader = None,
+    ):
+        """train model
 
         Arguments:
         ----------
@@ -120,7 +129,11 @@ class MLPClassificationTrainer(TrainerBase):
                 st = time.time()
 
                 for i, (inputs, labels) in enumerate(train_loader, 1):
-                    show_progressbar(len(train_loader.dataset)//train_loader.batch_size, i, whole_time=time.time()-st)
+                    show_progressbar(
+                        len(train_loader.dataset) // train_loader.batch_size,
+                        i,
+                        whole_time=time.time() - st,
+                    )
 
                     if not reshape_size is None:
                         inputs = inputs.view(*reshape_size)
@@ -148,10 +161,15 @@ class MLPClassificationTrainer(TrainerBase):
                     self.model.eval()
                     with torch.no_grad():
                         for i, (inputs, labels) in enumerate(validation_loader, 1):
-                            show_progressbar(len(validation_loader.dataset)//validation_loader.batch_size, i, is_training=False)
+                            show_progressbar(
+                                len(validation_loader.dataset)
+                                // validation_loader.batch_size,
+                                i,
+                                is_training=False,
+                            )
 
-                                if not reshape_size is None:
-                                    inputs = inputs.view(*reshape_size)
+                            if not reshape_size is None:
+                                inputs = inputs.view(*reshape_size)
 
                             inputs, labels = convert_device(inputs, labels)
                             outputs = self.model(inputs)
@@ -164,14 +182,27 @@ class MLPClassificationTrainer(TrainerBase):
                         self.val_loss_history.append(val_loss)
                         self.val_acc_history.append(val_acc)
 
-                if (epoch+1) % verbose_rate == 0:
-                    print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss, time=time_diff)
+                if (epoch + 1) % verbose_rate == 0:
+                    print_result(
+                        epoch,
+                        epochs,
+                        train_acc,
+                        train_loss,
+                        val_acc,
+                        val_loss,
+                        time=time_diff,
+                    )
 
         except KeyboardInterrupt:
             respond_exeption(self.model)
 
-    def predict(self, test_loader, reshape_size=None, to_numpy=False):
-        """ predict
+    def predict(
+        self,
+        test_loader: torch.utils.data.DataLoader,
+        reshape_size: Tuple[int] = None,
+        to_numpy: bool = False,
+    ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
+        """predict
 
         Arguments:
         ----------
@@ -191,7 +222,9 @@ class MLPClassificationTrainer(TrainerBase):
 
         self.model.eval()
         for i, (inputs, labels) in enumerate(test_loader, 1):
-            show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
+            show_progressbar(
+                len(test_loader.dataset) // test_loader.batch_size, i, is_training=False
+            )
 
             if type(reshape_size) == tuple:
                 inputss = inputss.view(*reshape_size)
@@ -211,8 +244,8 @@ class MLPClassificationTrainer(TrainerBase):
         else:
             return total_outputs, total_labels
 
-    def evaluate(self, test_loader):
-        """ evaluate
+    def evaluate(self, test_loader: torch.utils.data.DataLoader):
+        """evaluate
 
         Arguments:
         ----------
@@ -224,7 +257,11 @@ class MLPClassificationTrainer(TrainerBase):
         self.model.eval()
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(test_loader):
-                show_progressbar(len(test_loader.dataset)//test_loader.batch_size, i, is_training=False)
+                show_progressbar(
+                    len(test_loader.dataset) // test_loader.batch_size,
+                    i,
+                    is_training=False,
+                )
                 inputs, labels = convert_device(inputs, labels)
                 outputs = self.model(inputs)
                 acc += calculate_accuracy(outputs, labels)
@@ -234,8 +271,8 @@ class MLPClassificationTrainer(TrainerBase):
             acc /= len(test_loader.dataset)
             print(f"Evaluation Accuracy: {acc: .6f}")
 
-    def save(self, model_path="model.pth", is_parameter_only=True):
-        """ save
+    def save(self, model_path: str = "model.pth", is_parameter_only: bool = True):
+        """save
 
         Keyword Arguments:
         ------------------
@@ -243,8 +280,8 @@ class MLPClassificationTrainer(TrainerBase):
         """
         save_model(self.model, model_path, is_parameter_only)
 
-    def read(self, model_path="model.pth"):
-        """ read
+    def read(self, model_path: str = "model.pth"):
+        """read
 
         Keyword Arguments:
         ------------------
@@ -271,7 +308,7 @@ class MLPClassificationTrainer(TrainerBase):
         plt.show()
 
     def set_callback(self, event: ECallbackEvent, *args, **kwargs):
-        """ set callback
+        """set callback
 
         Arguments:
         ----------
@@ -292,12 +329,21 @@ class MLPClassificationTrainer(TrainerBase):
         elif event == ECallbackEvent.ACCURACY:
             self.callback[event] = {"accuracy_base": kwargs.get("accuracy_base", -1)}
         elif event == ECallbackEvent.LOSS:
-            self.callback[event] = {"loss_diff_threshold": kwargs.get("loss_diff_threshold", -1)}
+            self.callback[event] = {
+                "loss_diff_threshold": kwargs.get("loss_diff_threshold", -1)
+            }
 
 
 # プログレスバーなど未実装
 class MLPAutoEncoderTrainer(MLPClassificationTrainer):
-    def __init__(self, model, criterion, optimizer, input_shape, device=None, ):
+    def __init__(
+        self,
+        model,
+        criterion,
+        optimizer,
+        input_shape,
+        device=None,
+    ):
         super(MLPAutoEncoderTrainer, self).__init__(model, criterion, optimizer, device)
         self.INPUT_SHAPE = input_shape
 
@@ -344,7 +390,9 @@ class MLPAutoEncoderTrainer(MLPClassificationTrainer):
                         self.val_acc_history.append(val_acc)
 
                 if epoch % verbose_rate == 0:
-                    print_result(epoch, epochs, train_acc, train_loss, val_acc, val_loss)
+                    print_result(
+                        epoch, epochs, train_acc, train_loss, val_acc, val_loss
+                    )
 
         except KeyboardInterrupt:
             respond_exeption(self.model)

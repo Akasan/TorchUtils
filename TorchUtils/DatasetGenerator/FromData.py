@@ -3,7 +3,7 @@ from ._LoaderGenerator import generate_dataloader
 
 
 class UserDataDataset(torch.utils.data.Dataset):
-    """ ユーザが指定したデータからDatasetを作成する
+    """ユーザが指定したデータからDatasetを作成する
 
     例えば一般的な数値ベクトルなどを指定すると、それに対応するDatasetを自動で生成します。
     データセットのサイズは入力Xのシェイプの最初の要素となります。
@@ -21,6 +21,8 @@ class UserDataDataset(torch.utils.data.Dataset):
         return self.X[i], self.y[i]
 
 
-def generate_dataset_for_userdata(X, y, batch_size, shuffle=True, num_workers=2, transform=None):
+def generate_dataset_for_userdata(
+    X, y, batch_size, shuffle=True, num_workers=2, transform=None
+):
     dataset = UserDataDataset(X, y, transform)
     return generate_dataloader(dataset, batch_size, shuffle, num_workers)
