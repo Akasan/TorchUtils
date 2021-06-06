@@ -8,9 +8,14 @@ from .TypeChecker import get_type
 from .Errors import *
 
 
-def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: Optional[bool] = None,
-                is_no_shape_check: bool = False, is_print: bool = True) -> None:
-    """ check_shape
+def check_shape(
+    model: nn.Module,
+    input_shape: Tuple[int],
+    output_shape: Optional[bool] = None,
+    is_no_shape_check: bool = False,
+    is_print: bool = True,
+) -> None:
+    """check_shape
 
     Arguments:
     ----------
@@ -165,9 +170,13 @@ def check_shape(model: nn.Module, input_shape: Tuple[int], output_shape: Optiona
         is_exact_output_shape = _is_exact_output_shape(output_shape, shape_history[i])
 
 
-def _is_available_shape(previous_output: Tuple[int], current_input: Tuple[int],
-                        previous_output_shape: str, current_input_shape: str) -> bool:
-    """ _is_available_shape
+def _is_available_shape(
+    previous_output: Tuple[int],
+    current_input: Tuple[int],
+    previous_output_shape: str,
+    current_input_shape: str,
+) -> bool:
+    """_is_available_shape
 
     Arguments:
     ----------
@@ -193,12 +202,14 @@ def _is_available_shape(previous_output: Tuple[int], current_input: Tuple[int],
     return False
 
 
-def _calculate_convolutional_output_shape(input_shape: Tuple[int],
-                                          output_chennels: int,
-                                          kernel_size: Union[int, Tuple[int]],
-                                          padding: Tuple[int] = (0, 0),
-                                          stride: Tuple[int] = (1, 1)) -> Tuple[int, int, int]:
-    """ _calculate_convolutional_output_shape
+def _calculate_convolutional_output_shape(
+    input_shape: Tuple[int],
+    output_chennels: int,
+    kernel_size: Union[int, Tuple[int]],
+    padding: Tuple[int] = (0, 0),
+    stride: Tuple[int] = (1, 1),
+) -> Tuple[int, int, int]:
+    """_calculate_convolutional_output_shape
 
     Arguments:
     ----------
@@ -224,10 +235,14 @@ def _calculate_convolutional_output_shape(input_shape: Tuple[int],
     return (output_height, output_width, output_chennels)
 
 
-def _calculate_pooling_output_shape(input_shape: Tuple[int], kernel_size: Union[int, Tuple[int]],
-                                    padding: Union[int, Tuple[int]], stride: Union[int, Tuple[int]],
-                                    dilation: Union[int, Tuple[int]]) -> Tuple[int, int, int]:
-    """ _calculate_pooling_output_shape
+def _calculate_pooling_output_shape(
+    input_shape: Tuple[int],
+    kernel_size: Union[int, Tuple[int]],
+    padding: Union[int, Tuple[int]],
+    stride: Union[int, Tuple[int]],
+    dilation: Union[int, Tuple[int]],
+) -> Tuple[int, int, int]:
+    """_calculate_pooling_output_shape
 
     Arguments:
     ----------
@@ -268,8 +283,14 @@ def _calculate_pooling_output_shape(input_shape: Tuple[int], kernel_size: Union[
     return (output_height, output_width, input_shape[-1])
 
 
-def _calculate_upsample_shape(input_shape: Tuple[int], scale_factor: float) -> Tuple[int, int, int]:
-    return (input_shape[0]*scale_factor, input_shape[1]*scale_factor, input_shape[-1])
+def _calculate_upsample_shape(
+    input_shape: Tuple[int], scale_factor: float
+) -> Tuple[int, int, int]:
+    return (
+        input_shape[0] * scale_factor,
+        input_shape[1] * scale_factor,
+        input_shape[-1],
+    )
 
 
 def _is_exact_output_shape(exact_shape: Tuple[int], model_shape: Tuple[int]) -> bool:
